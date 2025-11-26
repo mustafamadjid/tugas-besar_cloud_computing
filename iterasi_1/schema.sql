@@ -19,3 +19,13 @@ CREATE TABLE events (
   promoter_id INTEGER REFERENCES users(id),
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE tickets (
+  id SERIAL PRIMARY KEY,
+  event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
+  type VARCHAR(100) NOT NULL,
+  price NUMERIC(10, 2) NOT NULL,
+  quantity INTEGER NOT NULL,
+  sale_start_date TIMESTAMP,
+  sale_end_date TIMESTAMP
+);

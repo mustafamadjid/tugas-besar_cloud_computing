@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import googleAuthRoutes from "./src/routes/googleAuthRoutes.js";
+import eventRoutes from "./src/routes/eventRoutes.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.get("/", (req, res) => {
 
 // Routes
 app.use("/api/auth", googleAuthRoutes);
+app.use("/api/events", eventRoutes);
 
 
 // Start server
