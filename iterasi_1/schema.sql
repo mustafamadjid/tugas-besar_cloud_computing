@@ -20,12 +20,25 @@ CREATE TABLE events (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE tickets (
+CREATE TABLE orders (
   id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  total_price NUMERIC(10, 2) NOT NULL,
+  payment_status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+  payment_method VARCHAR(50),
+  payment_reference VARCHAR(255),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE order_items (
+  id SERIAL PRIMARY KEY,
+  order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
   event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
-  type VARCHAR(100) NOT NULL,
-  price NUMERIC(10, 2) NOT NULL,
+  ticket_type VARCHAR(100) NOT NULL,
+  ticket_price NUMERIC(10, 2) NOT NULL,
   quantity INTEGER NOT NULL,
-  sale_start_date TIMESTAMP,
-  sale_end_date TIMESTAMP
+  qr_code TEXT UNIQUE,
+  checked_in BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW()
 );
