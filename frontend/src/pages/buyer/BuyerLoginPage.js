@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { googleSignInBuyer } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/Auth.css';
+import { FaKey } from 'react-icons/fa';
 
 export default function BuyerLoginPage() {
   const navigate = useNavigate();
@@ -29,10 +30,9 @@ export default function BuyerLoginPage() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <span className="auth-icon">🎫</span>
-          <h1>Login Penonton</h1>
+          <h1>Login User</h1>
         </div>
-        <p className="subtitle">Jelajahi dan beli tiket event favorit Anda.</p>
+        <p className="subtitle">Akses event seru dengan gotiketku.</p>
         
         {error && <div className="error-message">{error}</div>}
 
@@ -42,7 +42,7 @@ export default function BuyerLoginPage() {
             onClick={handleLogin}
             disabled={loading}
           >
-            {loading ? 'Loading...' : '🔑 Masuk dengan Google'}
+            {loading ? 'Loading...' : <><FaKey /> Masuk dengan Google</>}
           </button>
         </div>
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FaKey } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { googleSignInPromoter } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
@@ -41,10 +42,9 @@ export default function PromoterLoginPage() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <span className="auth-icon">🎪</span>
           <h1>Login Promotor</h1>
         </div>
-        <p className="subtitle">Kelola event dan tiket Anda dengan mudah.</p>
+        <p className="subtitle">Kelola event Anda dengan gotiketku.</p>
         
         {error && <div className="error-message">{error}</div>}
 
@@ -54,7 +54,7 @@ export default function PromoterLoginPage() {
             onClick={handleLogin}
             disabled={loading}
           >
-            {loading ? 'Loading...' : '🔑 Masuk dengan Google'}
+            {loading ? 'Loading...' : <><FaKey /> Masuk dengan Google</>}
           </button>
         </div>
 

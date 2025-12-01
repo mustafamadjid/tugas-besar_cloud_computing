@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
+import { FaRegCalendarAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { getAllEvents } from '../services/eventService';
 import Navbar from '../components/Navbar';
@@ -87,7 +89,7 @@ export default function LandingPage() {
                     <h3>{event.title}</h3>
                     <div className="event-meta">
                       <span className="date">
-                        📅 {new Date(event.date).toLocaleDateString('id-ID')}
+                        <FaRegCalendarAlt /> {new Date(event.date).toLocaleDateString('id-ID')}
                       </span>
                       {event.location && (
                         <span className="location">📍 {event.location}</span>
@@ -127,7 +129,7 @@ export default function LandingPage() {
       <footer className="footer">
         <div className="footer-content">
           <div className="footer-section">
-            <h4>Tentang KOMA</h4>
+            <h4>Tentang gotiketku</h4>
             <p>Platform terpercaya untuk pembelian tiket event favorit Anda. Nikmati pengalaman booking yang mudah dan aman.</p>
           </div>
           <div className="footer-section">
@@ -151,14 +153,14 @@ export default function LandingPage() {
           <div className="footer-section">
             <h4>Ikuti Kami</h4>
             <div className="social-links">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">📘 Facebook</a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">📷 Instagram</a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">𝕏 Twitter</a>
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"><FaFacebookF /> Facebook</a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"><FaInstagram /> Instagram</a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"><FaTwitter /> Twitter</a>
             </div>
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2025 KOMA Event Ticketing. All rights reserved.</p>
+          <p>&copy; 2025 gotiketku Event Ticketing. All rights reserved.</p>
         </div>
       </footer>
     </div>

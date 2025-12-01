@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import "../styles/Auth.css";
 
 // React Icons
-import { FaTicketAlt, FaUsers, FaBullhorn } from "react-icons/fa";
+import { FaUsers, FaBullhorn } from "react-icons/fa";
 
 export default function AuthSelectionPage() {
   return (
@@ -11,9 +11,8 @@ export default function AuthSelectionPage() {
       <div className="auth-card">
         <div className="auth-header">
           <span className="auth-icon" aria-hidden="true">
-            <FaTicketAlt />
           </span>
-          <h1>KOMA</h1>
+          <h1>GOTIKETKU</h1>
         </div>
 
         <p className="subtitle">Pilih tipe akun Anda untuk masuk.</p>
