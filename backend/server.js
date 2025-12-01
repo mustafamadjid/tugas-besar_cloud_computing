@@ -9,14 +9,28 @@ dotenv.config();
 
 const app = express();
 
-const allowedOrigins = ["http://localhost:3000", "https://app.domain.com"];
+// Bisa isi banyak origin yang diizinkan
+const allowedOrigins = [
+  "http://localhost:3000",
+  process.env.FRONTEND_URL, // FE di Cloud Run atau custom domain
+].filter(Boolean); // buang null/undefined
 
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
 
-app.use(cors({
-  origin: allowedOrigins,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders : ["Content-Type", "Authorization"],
-}));
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 app.use(express.json());
 
 // Health check
@@ -27,7 +41,6 @@ app.get("/", (req, res) => {
 // Routes
 app.use("/api/auth", googleAuthRoutes);
 app.use("/api/events", eventRoutes);
-
 
 // Start server
 const PORT = process.env.PORT || 8080;
