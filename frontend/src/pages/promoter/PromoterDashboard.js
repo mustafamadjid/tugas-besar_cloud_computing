@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar";
 import "../../styles/promoter/PromotorDashboard.css";
 
-// React Icons
+import api from "../../services/api";
+
 import {
   FaTicketAlt,
   FaMoneyBillWave,
@@ -20,15 +21,194 @@ import {
 
 import { FiMapPin, FiCalendar } from "react-icons/fi";
 
+const EVENTS_ENDPOINT = "/api/events";
+
+function formatDate(dateValue) {
+  if (!dateValue) return "-";
+  const d = new Date(dateValue);
+  if (Number.isNaN(d.getTime())) return dateValue;
+  return d.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function toDateInputValue(dateValue) {
+  if (!dateValue) return "";
+  if (typeof dateValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+    return dateValue;
+  }
+  const d = new Date(dateValue);
+  if (Number.isNaN(d.getTime())) return "";
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function isUpcoming(dateValue) {
+  const d = new Date(dateValue);
+  if (Number.isNaN(d.getTime())) return false;
+  return d >= new Date();
+}
+
 export default function PromoterDashboard() {
   const [activeSection, setActiveSection] = useState("overview");
+
+  const [events, setEvents] = useState([]);
+  const [loadingEvents, setLoadingEvents] = useState(false);
+  const [eventsError, setEventsError] = useState("");
+
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [creatingEvent, setCreatingEvent] = useState(false);
+  const [createError, setCreateError] = useState("");
+
+  const [editingEventId, setEditingEventId] = useState(null);
+
+  const [newEvent, setNewEvent] = useState({
+    title: "",
+    description: "",
+    date: "",
+    location: "",
+    poster_url: "",
+  });
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      setLoadingEvents(true);
+      setEventsError("");
+
+      const res = await api.get(EVENTS_ENDPOINT);
+      setEvents(res.data?.data || []);
+    } catch (err) {
+      setEventsError(
+        err.response?.data?.message || err.message || "Gagal memuat event"
+      );
+    } finally {
+      setLoadingEvents(false);
+    }
+  };
+
+  const handleNewEventChange = (field, value) => {
+    setNewEvent((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const resetNewEventForm = () => {
+    setNewEvent({
+      title: "",
+      description: "",
+      date: "",
+      location: "",
+      poster_url: "",
+    });
+    setCreateError("");
+  };
+
+  const handleSubmitEvent = async (e) => {
+    e.preventDefault();
+    setCreateError("");
+
+    if (!newEvent.title || !newEvent.date) {
+      setCreateError("Judul dan tanggal wajib diisi.");
+      return;
+    }
+
+    try {
+      setCreatingEvent(true);
+
+      if (editingEventId) {
+        const res = await api.put(
+          `${EVENTS_ENDPOINT}/${editingEventId}`,
+          newEvent
+        );
+        const updated = res.data?.data;
+        setEvents((prev) =>
+          prev.map((ev) => (ev.id === updated.id ? updated : ev))
+        );
+      } else {
+        const res = await api.post(EVENTS_ENDPOINT, newEvent);
+        const created = res.data?.data;
+        setEvents((prev) => [...prev, created]);
+      }
+
+      resetNewEventForm();
+      setEditingEventId(null);
+      setShowEventForm(false);
+    } catch (err) {
+      const fallbackMessage = editingEventId
+        ? "Gagal mengupdate event"
+        : "Gagal membuat event";
+      setCreateError(
+        err.response?.data?.message || err.message || fallbackMessage
+      );
+    } finally {
+      setCreatingEvent(false);
+    }
+  };
+
+  const handleDeleteEvent = async (id) => {
+    const confirmDelete = window.confirm("Yakin ingin menghapus event ini?");
+    if (!confirmDelete) return;
+
+    try {
+      await api.delete(`${EVENTS_ENDPOINT}/${id}`);
+      setEvents((prev) => prev.filter((ev) => ev.id !== id));
+
+      if (editingEventId === id) {
+        resetNewEventForm();
+        setEditingEventId(null);
+        setShowEventForm(false);
+      }
+    } catch (err) {
+      alert(
+        err.response?.data?.message || err.message || "Gagal menghapus event"
+      );
+    }
+  };
+
+  const handleClickNewEventButton = () => {
+    if (editingEventId) {
+      resetNewEventForm();
+      setEditingEventId(null);
+      setShowEventForm(true);
+      return;
+    }
+
+    setShowEventForm((prev) => {
+      const next = !prev;
+      if (!next) {
+        resetNewEventForm();
+        setEditingEventId(null);
+      }
+      return next;
+    });
+  };
+
+  const handleEditEvent = (event) => {
+    setNewEvent({
+      title: event.title || "",
+      description: event.description || "",
+      date: toDateInputValue(event.date),
+      location: event.location || "",
+      poster_url: event.poster_url || "",
+    });
+    setEditingEventId(event.id);
+    setCreateError("");
+    setShowEventForm(true);
+  };
+
+  const isEditing = Boolean(editingEventId);
 
   return (
     <div className="promoter-dashboard">
       <Navbar />
 
       <div className="dashboard-container">
-        {/* Sidebar */}
         <aside className="dashboard-sidebar">
           <div className="sidebar-header">
             <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -46,6 +226,7 @@ export default function PromoterDashboard() {
               <FaChartBar style={{ marginRight: 8 }} />
               Dashboard
             </button>
+
             <button
               className={`menu-item ${
                 activeSection === "events" ? "active" : ""
@@ -55,6 +236,7 @@ export default function PromoterDashboard() {
               <FaClipboardList style={{ marginRight: 8 }} />
               Event Saya
             </button>
+
             <button
               className={`menu-item ${
                 activeSection === "tickets" ? "active" : ""
@@ -64,6 +246,7 @@ export default function PromoterDashboard() {
               <FaTicketAlt style={{ marginRight: 8 }} />
               Manajemen Tiket
             </button>
+
             <button
               className={`menu-item ${
                 activeSection === "sales" ? "active" : ""
@@ -73,6 +256,7 @@ export default function PromoterDashboard() {
               <FaMoneyBillWave style={{ marginRight: 8 }} />
               Penjualan
             </button>
+
             <button
               className={`menu-item ${
                 activeSection === "checkin" ? "active" : ""
@@ -82,6 +266,7 @@ export default function PromoterDashboard() {
               <FaCheckCircle style={{ marginRight: 8 }} />
               Check-in
             </button>
+
             <button
               className={`menu-item ${
                 activeSection === "profile" ? "active" : ""
@@ -94,9 +279,7 @@ export default function PromoterDashboard() {
           </nav>
         </aside>
 
-        {/* Main Content */}
         <main className="dashboard-content">
-          {/* Overview */}
           {activeSection === "overview" && (
             <section className="section-overview">
               <h2>Dashboard Promotor</h2>
@@ -108,7 +291,7 @@ export default function PromoterDashboard() {
                   </div>
                   <div className="stat-content">
                     <p className="stat-label">Total Event</p>
-                    <h3 className="stat-value">8</h3>
+                    <h3 className="stat-value">{events.length}</h3>
                   </div>
                 </div>
 
@@ -167,33 +350,12 @@ export default function PromoterDashboard() {
                         </span>
                       </td>
                     </tr>
-                    <tr>
-                      <td>Festival Musik 2025</td>
-                      <td>Jane Smith</td>
-                      <td>1 tiket</td>
-                      <td>Rp 250.000</td>
-                      <td>
-                        <span className="status-completed">
-                          <FaCheckCircle /> Lunas
-                        </span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Stand Up Comedy</td>
-                      <td>Alex Johnson</td>
-                      <td>3 tiket</td>
-                      <td>Rp 450.000</td>
-                      <td>
-                        <span className="status-pending">Pending</span>
-                      </td>
-                    </tr>
                   </tbody>
                 </table>
               </div>
             </section>
           )}
 
-          {/* Events Management */}
           {activeSection === "events" && (
             <section className="section-events">
               <div className="section-header">
@@ -201,112 +363,214 @@ export default function PromoterDashboard() {
                 <button
                   className="btn-sm"
                   style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  onClick={handleClickNewEventButton}
                 >
-                  <FaPlus /> Buat Event
+                  <FaPlus />{" "}
+                  {isEditing
+                    ? "Buat Event Baru"
+                    : showEventForm
+                    ? "Tutup Form"
+                    : "Buat Event"}
                 </button>
               </div>
 
-              <div className="events-list">
-                <div className="event-item">
-                  <div className="event-poster">
-                    <FaTheaterMasks />
+              {showEventForm && (
+                <form className="event-form" onSubmit={handleSubmitEvent}>
+                  <div className="form-row">
+                    <label>Judul Event *</label>
+                    <input
+                      type="text"
+                      value={newEvent.title}
+                      onChange={(e) =>
+                        handleNewEventChange("title", e.target.value)
+                      }
+                      placeholder="Contoh: Konser BTS"
+                      required
+                    />
                   </div>
-                  <div className="event-detail">
-                    <h4>Konser BTS</h4>
-                    <p
-                      style={{ display: "flex", alignItems: "center", gap: 10 }}
-                    >
-                      <span
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
-                      >
-                        <FiCalendar /> 25 Dec 2024
-                      </span>
-                      <span
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
-                      >
-                        <FiMapPin /> Jakarta
-                      </span>
-                    </p>
-                    <p className="event-status">
-                      <FaCheckCircle /> Aktif
-                    </p>
-                  </div>
-                  <div className="event-actions">
-                    <button
-                      className="btn-sm"
-                      style={{ display: "flex", alignItems: "center", gap: 6 }}
-                    >
-                      <FaEdit /> Edit
-                    </button>
-                    <button
-                      className="btn-sm danger"
-                      style={{ display: "flex", alignItems: "center", gap: 6 }}
-                    >
-                      <FaTrashAlt /> Hapus
-                    </button>
-                  </div>
-                </div>
 
-                <div className="event-item">
-                  <div className="event-poster">
-                    <FaBullhorn />
+                  <div className="form-row">
+                    <label>Tanggal *</label>
+                    <input
+                      type="date"
+                      value={newEvent.date}
+                      onChange={(e) =>
+                        handleNewEventChange("date", e.target.value)
+                      }
+                      required
+                    />
                   </div>
-                  <div className="event-detail">
-                    <h4>Festival Musik 2025</h4>
-                    <p
-                      style={{ display: "flex", alignItems: "center", gap: 10 }}
-                    >
-                      <span
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
-                      >
-                        <FiCalendar /> 10 Jan 2025
-                      </span>
-                      <span
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
-                      >
-                        <FiMapPin /> Bandung
-                      </span>
-                    </p>
-                    <p className="event-status">
-                      <FaCheckCircle /> Aktif
-                    </p>
+
+                  <div className="form-row">
+                    <label>Lokasi</label>
+                    <input
+                      type="text"
+                      value={newEvent.location}
+                      onChange={(e) =>
+                        handleNewEventChange("location", e.target.value)
+                      }
+                      placeholder="Contoh: Jakarta"
+                    />
                   </div>
-                  <div className="event-actions">
+
+                  <div className="form-row">
+                    <label>Deskripsi</label>
+                    <textarea
+                      rows={3}
+                      value={newEvent.description}
+                      onChange={(e) =>
+                        handleNewEventChange("description", e.target.value)
+                      }
+                      placeholder="Deskripsi singkat event"
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <label>Poster URL</label>
+                    <input
+                      type="text"
+                      value={newEvent.poster_url}
+                      onChange={(e) =>
+                        handleNewEventChange("poster_url", e.target.value)
+                      }
+                      placeholder="https://example.com/poster.jpg"
+                    />
+                  </div>
+
+                  {createError && (
+                    <p className="form-error" style={{ marginTop: 8 }}>
+                      {createError}
+                    </p>
+                  )}
+
+                  <div className="form-actions" style={{ marginTop: 12 }}>
                     <button
+                      type="button"
+                      className="btn-sm secondary"
+                      onClick={() => {
+                        resetNewEventForm();
+                        setEditingEventId(null);
+                        setShowEventForm(false);
+                      }}
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
                       className="btn-sm"
-                      style={{ display: "flex", alignItems: "center", gap: 6 }}
+                      disabled={creatingEvent}
                     >
-                      <FaEdit /> Edit
-                    </button>
-                    <button
-                      className="btn-sm danger"
-                      style={{ display: "flex", alignItems: "center", gap: 6 }}
-                    >
-                      <FaTrashAlt /> Hapus
+                      {creatingEvent
+                        ? "Menyimpan..."
+                        : isEditing
+                        ? "Update Event"
+                        : "Simpan Event"}
                     </button>
                   </div>
-                </div>
+                </form>
+              )}
+
+              <div className="events-list" style={{ marginTop: 20 }}>
+                {loadingEvents && <p className="info-text">Memuat event...</p>}
+
+                {eventsError && !loadingEvents && (
+                  <p className="error-text">{eventsError}</p>
+                )}
+
+                {!loadingEvents && !eventsError && events.length === 0 && (
+                  <p className="info-text">
+                    Belum ada event. Buat event pertama Anda.
+                  </p>
+                )}
+
+                {!loadingEvents &&
+                  !eventsError &&
+                  events.map((event) => (
+                    <div className="event-item" key={event.id}>
+                      <div className="event-poster">
+                        {event.poster_url ? (
+                          <img
+                            src={event.poster_url}
+                            alt={event.title}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                              borderRadius: 8,
+                            }}
+                          />
+                        ) : (
+                          <FaTheaterMasks />
+                        )}
+                      </div>
+
+                      <div className="event-detail">
+                        <h4>{event.title}</h4>
+                        <p
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                          }}
+                        >
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 4,
+                            }}
+                          >
+                            <FiCalendar /> {formatDate(event.date)}
+                          </span>
+
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 4,
+                            }}
+                          >
+                            <FiMapPin /> {event.location || "-"}
+                          </span>
+                        </p>
+
+                        <p className="event-status">
+                          <FaCheckCircle />{" "}
+                          {isUpcoming(event.date) ? "Aktif" : "Selesai"}
+                        </p>
+                      </div>
+
+                      <div className="event-actions">
+                        <button
+                          className="btn-sm"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                          onClick={() => handleEditEvent(event)}
+                        >
+                          <FaEdit /> Edit
+                        </button>
+
+                        <button
+                          className="btn-sm danger"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                          onClick={() => handleDeleteEvent(event.id)}
+                        >
+                          <FaTrashAlt /> Hapus
+                        </button>
+                      </div>
+                    </div>
+                  ))}
               </div>
             </section>
           )}
 
-          {/* Ticket Management */}
           {activeSection === "tickets" && (
             <section className="section-tickets">
               <div className="section-header">
@@ -317,11 +581,9 @@ export default function PromoterDashboard() {
               <p className="info-text">
                 Kelola kategori tiket, kuota, dan harga
               </p>
-              {/* Form akan ditambahkan */}
             </section>
           )}
 
-          {/* Sales Report */}
           {activeSection === "sales" && (
             <section className="section-sales">
               <div className="section-header">
@@ -332,11 +594,9 @@ export default function PromoterDashboard() {
               <p className="info-text">
                 Lihat data pembeli, riwayat penjualan, dan export data
               </p>
-              {/* Report akan ditambahkan */}
             </section>
           )}
 
-          {/* Check-in */}
           {activeSection === "checkin" && (
             <section className="section-checkin">
               <div className="section-header">
@@ -347,11 +607,9 @@ export default function PromoterDashboard() {
               <p className="info-text">
                 Scan QR Code untuk validasi tiket masuk event
               </p>
-              {/* Check-in form akan ditambahkan */}
             </section>
           )}
 
-          {/* Profile */}
           {activeSection === "profile" && (
             <section className="section-profile">
               <div className="section-header">
@@ -362,7 +620,6 @@ export default function PromoterDashboard() {
               <p className="info-text">
                 Kelola informasi profil dan brand event Anda
               </p>
-              {/* Profile form akan ditambahkan */}
             </section>
           )}
         </main>
