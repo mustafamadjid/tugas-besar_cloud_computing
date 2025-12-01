@@ -31,7 +31,7 @@ export default function LandingPage() {
 
   return (
     <div className="landing-page">
-
+      <Navbar/>
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-content">

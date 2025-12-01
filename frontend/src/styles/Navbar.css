@@ -71,12 +71,13 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  border-bottom: 2px solid transparent;
+  
   margin-bottom: -10px;
 }
 
 .tab-item:hover {
-  color: white;
+ 
+  border-bottom: 2px solid transparent;
 }
 
 .tab-item.active {

@@ -43,7 +43,7 @@ export default function Navbar() {
         <div className="navbar-left">
           <div className="navbar-brand" onClick={() => handleNavClick('/')}>
             <span className="brand-icon">🎫</span>
-            <span className="brand-name">KOMA</span>
+            <span className="brand-name">TIKETKU</span>
           </div>
 
           <div className="navbar-tabs">
@@ -56,7 +56,7 @@ export default function Navbar() {
             >
               Event
             </button>
-            <button 
+            {/* <button 
               className={`tab-item ${activeTab === 'Atraksi' ? 'active' : ''}`}
               onClick={() => {
                 setActiveTab('Atraksi');
@@ -64,7 +64,7 @@ export default function Navbar() {
               }}
             >
               Atraksi
-            </button>
+            </button> */}
           </div>
         </div>
 

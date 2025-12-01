@@ -18,8 +18,20 @@ export default function PromoterLoginPage() {
       loginUser(userData, userData.role);
       navigate('/dashboard'); // Redirect to dashboard after successful promoter login
     } catch (err) {
-      setError('Login gagal. Silakan coba lagi.');
-      console.error(err);
+      const statusCode = err.response?.status;
+      const msg = err.response?.data?.message || err.message || 'Login Gagal. Silakan coba lagi.';
+
+      if (statusCode === 400) {
+        setError(msg);
+      }
+      if (statusCode === 401) {
+        setError(msg);
+      }
+      if(statusCode === 403) {
+        setError("Anda belum terdaftar sebagai promotor.");
+      }
+      
+      // console.error(err);
     } finally {
       setLoading(false);
     }

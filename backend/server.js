@@ -9,7 +9,14 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = ["http://localhost:3000", "https://app.domain.com"];
+
+
+app.use(cors({
+  origin: allowedOrigins,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders : ["Content-Type", "Authorization"],
+}));
 app.use(express.json());
 
 // Health check

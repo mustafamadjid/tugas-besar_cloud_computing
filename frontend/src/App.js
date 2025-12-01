@@ -91,7 +91,6 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Navbar />
         <main>
           <AppRoutes />
         </main>

@@ -24,14 +24,16 @@ export const googleSignInBuyer = async () => {
     const result = await signInWithPopup(auth, googleProvider);
     const idToken = await result.user.getIdToken();
     
+    
     // Kirim ke backend untuk verifikasi dan create/update user
     const response = await api.post('/api/auth/buyer', { idToken });
-    
+  
     if (response.data.data.token) {
       localStorage.setItem('token', response.data.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.data));
       localStorage.setItem('role', response.data.data.role);
     }
+    
     
     return response.data.data;
   } catch (error) {
@@ -58,8 +60,10 @@ export const googleSignInPromoter = async () => {
     
     return response.data.data;
   } catch (error) {
-    console.error('Google Sign In Error:', error);
-    throw error;
+    const status = error?.response?.status;
+    const message = error?.response?.data?.message ||  error?.message|| 'Unknown error occurred';
+    console.error('Google Sign In Error:', {status, message,error});
+    throw error
   }
 };
 
