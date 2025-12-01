@@ -1,3 +1,4 @@
+// src/firebase/firebaseAdmin.js
 import admin from "firebase-admin";
 import fs from "fs";
 import path from "path";
@@ -6,25 +7,30 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Flag sederhana untuk cek apakah sedang di GCP (Cloud Run)
-const isRunningInGCP = !!process.env.K_SERVICE; // env ini otomatis ada di Cloud Run
+const isCloudRun = !!process.env.K_SERVICE;
 
 if (!admin.apps.length) {
-  if (isRunningInGCP) {
-    // ============================
-    //  PROD: Cloud Run
-    // ============================
-    // Pakai Application Default Credentials (service account Cloud Run)
+  if (isCloudRun) {
+    // ===========================
+    // Cloud Run: pakai Secret file
+    // ===========================
+    const credentialsPath =
+      process.env.FIREBASE_CREDENTIALS_PATH ||
+      "/var/secrets/firebase/firebase-admin-key"; // fallback
+
+    const serviceAccount = JSON.parse(fs.readFileSync(credentialsPath, "utf8"));
+
     admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
+      credential: admin.credential.cert(serviceAccount),
     });
+
     console.log(
-      "✅ Firebase Admin initialized with applicationDefault() (Cloud Run)"
+      "🔥 Firebase Admin initialized in Cloud Run using service account JSON from Secret"
     );
   } else {
-    // ============================
-    //  LOKAL: pakai JSON file
-    // ============================
+    // ===========================
+    // Lokal: pakai file di repo
+    // ===========================
     const serviceAccountPath = path.join(
       __dirname,
       "../../firebase-service-account.json"
@@ -37,8 +43,9 @@ if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
+
     console.log(
-      "✅ Firebase Admin initialized with service-account JSON (local)"
+      "🔥 Firebase Admin initialized locally using firebase-service-account.json"
     );
   }
 }
