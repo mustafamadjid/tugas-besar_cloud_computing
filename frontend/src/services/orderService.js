@@ -14,7 +14,7 @@ export const createOrder = async (orderData) => {
 // Get user orders
 export const getUserOrders = async () => {
   try {
-    const response = await api.get('/api/orders/user/my-orders');
+    const response = await api.get('/api/buyer/tickets');
     return response.data.data;
   } catch (error) {
     console.error('Error fetching orders:', error);

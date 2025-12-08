@@ -22,6 +22,8 @@ import {
 import { FiMapPin, FiCalendar } from "react-icons/fi";
 
 const EVENTS_ENDPOINT = "/api/events";
+const EVENT_TICKETS_ENDPOINT = (eventId) => `/api/events/${eventId}/tickets`;
+const TICKET_ENDPOINT = (ticketId) => `/api/events/tickets/${ticketId}`;
 
 function formatDate(dateValue) {
   if (!dateValue) return "-";
@@ -56,6 +58,7 @@ function isUpcoming(dateValue) {
 export default function PromoterDashboard() {
   const [activeSection, setActiveSection] = useState("overview");
 
+  // ===== EVENTS STATE =====
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [eventsError, setEventsError] = useState("");
@@ -73,6 +76,23 @@ export default function PromoterDashboard() {
     location: "",
     poster_url: "",
   });
+
+  // ===== TICKETS STATE =====
+  const [selectedEventId, setSelectedEventId] = useState("");
+  const [tickets, setTickets] = useState([]);
+  const [loadingTickets, setLoadingTickets] = useState(false);
+  const [ticketsError, setTicketsError] = useState("");
+
+  const [ticketForm, setTicketForm] = useState({
+    type: "Reguler",
+    price: "",
+    quantity: "",
+    sale_start_date: "",
+    sale_end_date: "",
+  });
+  const [editingTicketId, setEditingTicketId] = useState(null);
+  const [ticketFormError, setTicketFormError] = useState("");
+  const [savingTicket, setSavingTicket] = useState(false);
 
   useEffect(() => {
     fetchEvents();
@@ -164,6 +184,12 @@ export default function PromoterDashboard() {
         setEditingEventId(null);
         setShowEventForm(false);
       }
+
+      if (String(selectedEventId) === String(id)) {
+        setSelectedEventId("");
+        setTickets([]);
+        resetTicketForm();
+      }
     } catch (err) {
       alert(
         err.response?.data?.message || err.message || "Gagal menghapus event"
@@ -203,6 +229,140 @@ export default function PromoterDashboard() {
   };
 
   const isEditing = Boolean(editingEventId);
+
+  // ===== TICKETS LOGIC =====
+
+  const resetTicketForm = () => {
+    setTicketForm({
+      type: "Reguler",
+      price: "",
+      quantity: "",
+      sale_start_date: "",
+      sale_end_date: "",
+    });
+    setEditingTicketId(null);
+    setTicketFormError("");
+  };
+
+  useEffect(() => {
+    if (!selectedEventId) {
+      setTickets([]);
+      setTicketsError("");
+      resetTicketForm();
+      return;
+    }
+    fetchTickets(selectedEventId);
+  }, [selectedEventId]);
+
+  const fetchTickets = async (eventId) => {
+    try {
+      setLoadingTickets(true);
+      setTicketsError("");
+
+      const res = await api.get(EVENT_TICKETS_ENDPOINT(eventId));
+      setTickets(res.data?.data || []);
+    } catch (err) {
+      setTicketsError(
+        err.response?.data?.message || err.message || "Gagal memuat tiket"
+      );
+    } finally {
+      setLoadingTickets(false);
+    }
+  };
+
+  const handleTicketFormChange = (field, value) => {
+    setTicketForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmitTicket = async (e) => {
+    e.preventDefault();
+    setTicketFormError("");
+
+    if (!selectedEventId) {
+      setTicketFormError("Pilih event terlebih dahulu.");
+      return;
+    }
+
+    if (
+      !ticketForm.type ||
+      ticketForm.price === "" ||
+      ticketForm.quantity === ""
+    ) {
+      setTicketFormError("Jenis tiket, harga, dan kuota wajib diisi.");
+      return;
+    }
+
+    const payload = {
+      type: ticketForm.type,
+      price: Number(ticketForm.price),
+      quantity: Number(ticketForm.quantity),
+      sale_start_date: ticketForm.sale_start_date || null,
+      sale_end_date: ticketForm.sale_end_date || null,
+    };
+
+    try {
+      setSavingTicket(true);
+
+      if (editingTicketId) {
+        const res = await api.put(TICKET_ENDPOINT(editingTicketId), payload);
+        const updated = res.data?.data;
+        setTickets((prev) =>
+          prev.map((t) => (t.id === updated.id ? updated : t))
+        );
+      } else {
+        const res = await api.post(
+          EVENT_TICKETS_ENDPOINT(selectedEventId),
+          payload
+        );
+        const created = res.data?.data;
+        setTickets((prev) => [...prev, created]);
+      }
+
+      resetTicketForm();
+    } catch (err) {
+      const fallbackMessage = editingTicketId
+        ? "Gagal mengupdate tiket"
+        : "Gagal membuat tiket";
+      setTicketFormError(
+        err.response?.data?.message || err.message || fallbackMessage
+      );
+    } finally {
+      setSavingTicket(false);
+    }
+  };
+
+  const handleEditTicket = (ticket) => {
+    setTicketForm({
+      type: ticket.type || "Reguler",
+      price: ticket.price ?? "",
+      quantity: ticket.quantity ?? "",
+      sale_start_date: toDateInputValue(ticket.sale_start_date),
+      sale_end_date: toDateInputValue(ticket.sale_end_date),
+    });
+    setEditingTicketId(ticket.id);
+    setTicketFormError("");
+  };
+
+  const handleDeleteTicket = async (ticketId) => {
+    const confirmDelete = window.confirm("Yakin ingin menghapus tiket ini?");
+    if (!confirmDelete) return;
+
+    try {
+      await api.delete(TICKET_ENDPOINT(ticketId));
+      setTickets((prev) => prev.filter((t) => t.id !== ticketId));
+      if (editingTicketId === ticketId) {
+        resetTicketForm();
+      }
+    } catch (err) {
+      alert(
+        err.response?.data?.message || err.message || "Gagal menghapus tiket"
+      );
+    }
+  };
+
+  const selectedEvent =
+    selectedEventId &&
+    events.find((ev) => String(ev.id) === String(selectedEventId));
 
   return (
     <div className="promoter-dashboard">
@@ -578,9 +738,228 @@ export default function PromoterDashboard() {
                   <FaTicketAlt /> Manajemen Tiket
                 </h2>
               </div>
-              <p className="info-text">
-                Kelola kategori tiket, kuota, dan harga
-              </p>
+
+              {/* Pilih Event */}
+              <div
+                className="event-form"
+                style={{ marginTop: 0, marginBottom: 20 }}
+              >
+                <div className="form-row">
+                  <label>Pilih Event</label>
+                  <select
+                    value={selectedEventId}
+                    onChange={(e) => setSelectedEventId(e.target.value)}
+                  >
+                    <option value="">-- Pilih Event --</option>
+                    {events.map((ev) => (
+                      <option key={ev.id} value={ev.id}>
+                        {ev.title} ({formatDate(ev.date)})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {selectedEvent && (
+                  <div className="form-row">
+                    <label>Info Event</label>
+                    <div className="info-text">
+                      <strong>{selectedEvent.title}</strong> |{" "}
+                      {formatDate(selectedEvent.date)} -{" "}
+                      {selectedEvent.location || "-"}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {!selectedEventId && (
+                <p className="info-text">
+                  Pilih event terlebih dahulu untuk mengelola tiket.
+                </p>
+              )}
+
+              {selectedEventId && (
+                <>
+                  {/* Form Tiket */}
+                  <form
+                    className="event-form"
+                    onSubmit={handleSubmitTicket}
+                    style={{ marginTop: 0 }}
+                  >
+                    <div className="form-row">
+                      <label>Jenis Tiket *</label>
+                      <select
+                        value={ticketForm.type}
+                        onChange={(e) =>
+                          handleTicketFormChange("type", e.target.value)
+                        }
+                      >
+                        <option value="Reguler">Reguler</option>
+                        <option value="VIP">VIP</option>
+                      </select>
+                    </div>
+
+                    <div className="form-row">
+                      <label>Harga (Rp) *</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={ticketForm.price}
+                        onChange={(e) =>
+                          handleTicketFormChange("price", e.target.value)
+                        }
+                        placeholder="Contoh: 250000"
+                      />
+                    </div>
+
+                    <div className="form-row">
+                      <label>Kuota / Quantity *</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={ticketForm.quantity}
+                        onChange={(e) =>
+                          handleTicketFormChange("quantity", e.target.value)
+                        }
+                        placeholder="Contoh: 100"
+                      />
+                    </div>
+
+                    <div className="form-row">
+                      <label>Tanggal Mulai Penjualan</label>
+                      <input
+                        type="date"
+                        value={ticketForm.sale_start_date}
+                        onChange={(e) =>
+                          handleTicketFormChange(
+                            "sale_start_date",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
+
+                    <div className="form-row">
+                      <label>Tanggal Akhir Penjualan</label>
+                      <input
+                        type="date"
+                        value={ticketForm.sale_end_date}
+                        onChange={(e) =>
+                          handleTicketFormChange(
+                            "sale_end_date",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
+
+                    {ticketFormError && (
+                      <p className="form-error">{ticketFormError}</p>
+                    )}
+
+                    <div className="form-actions">
+                      {editingTicketId && (
+                        <button
+                          type="button"
+                          className="btn-sm secondary"
+                          onClick={resetTicketForm}
+                        >
+                          Batal Edit
+                        </button>
+                      )}
+                      <button
+                        type="submit"
+                        className="btn-sm"
+                        disabled={savingTicket}
+                      >
+                        {savingTicket
+                          ? "Menyimpan..."
+                          : editingTicketId
+                          ? "Update Tiket"
+                          : "Simpan Tiket"}
+                      </button>
+                    </div>
+                  </form>
+
+                  {/* Daftar Tiket */}
+                  <div className="recent-sales" style={{ marginTop: 24 }}>
+                    <h3>Daftar Tiket</h3>
+
+                    {loadingTickets && (
+                      <p className="info-text">Memuat tiket...</p>
+                    )}
+
+                    {ticketsError && !loadingTickets && (
+                      <p className="error-text">{ticketsError}</p>
+                    )}
+
+                    {!loadingTickets &&
+                      !ticketsError &&
+                      tickets.length === 0 && (
+                        <p className="info-text">
+                          Belum ada tiket untuk event ini.
+                        </p>
+                      )}
+
+                    {!loadingTickets && !ticketsError && tickets.length > 0 && (
+                      <table className="sales-table">
+                        <thead>
+                          <tr>
+                            <th>Jenis</th>
+                            <th>Harga</th>
+                            <th>Kuota</th>
+                            <th>Periode Jual</th>
+                            <th>Aksi</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tickets.map((ticket) => (
+                            <tr key={ticket.id}>
+                              <td>{ticket.type}</td>
+                              <td>
+                                {ticket.price != null
+                                  ? `Rp ${Number(ticket.price).toLocaleString(
+                                      "id-ID"
+                                    )}`
+                                  : "-"}
+                              </td>
+                              <td>{ticket.quantity}</td>
+                              <td>
+                                {formatDate(ticket.sale_start_date)} -{" "}
+                                {formatDate(ticket.sale_end_date)}
+                              </td>
+                              <td>
+                                <button
+                                  className="btn-sm"
+                                  style={{
+                                    marginRight: 8,
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 4,
+                                  }}
+                                  onClick={() => handleEditTicket(ticket)}
+                                >
+                                  <FaEdit /> Edit
+                                </button>
+                                <button
+                                  className="btn-sm danger"
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 4,
+                                  }}
+                                  onClick={() => handleDeleteTicket(ticket.id)}
+                                >
+                                  <FaTrashAlt /> Hapus
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                </>
+              )}
             </section>
           )}
 

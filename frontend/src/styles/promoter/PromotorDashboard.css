@@ -107,6 +107,12 @@
   margin: 0;
 }
 
+.error-text {
+  color: #b42318;
+  font-size: 14px;
+  margin: 4px 0;
+}
+
 /* Stats Grid */
 .stats-grid {
   display: grid;
@@ -372,6 +378,7 @@
   }
 }
 
+/* Event & Ticket Form */
 .event-form {
   margin-top: 16px;
   background: white;
@@ -386,8 +393,14 @@
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .event-form .form-row {
@@ -403,7 +416,8 @@
 }
 
 .event-form .form-row input,
-.event-form .form-row textarea {
+.event-form .form-row textarea,
+.event-form .form-row select {
   width: 100%;
   background: #f5f7fa;
   border: 1px solid #ddd;
@@ -422,7 +436,8 @@
 }
 
 .event-form .form-row input:focus,
-.event-form .form-row textarea:focus {
+.event-form .form-row textarea:focus,
+.event-form .form-row select:focus {
   border-color: #667eea;
   background: #fff;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);

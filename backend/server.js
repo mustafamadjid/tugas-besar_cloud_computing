@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 import googleAuthRoutes from "./src/routes/googleAuthRoutes.js";
 import eventRoutes from "./src/routes/eventRoutes.js";
+import buyerRoutes from "./src/routes/buyerRoutes.js";
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ app.get("/", (req, res) => {
 // Routes
 app.use("/api/auth", googleAuthRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/buyer", buyerRoutes);
 
 // Start server
 const PORT = process.env.PORT || 8080;

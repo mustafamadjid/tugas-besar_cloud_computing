@@ -1,50 +1,54 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { getUserProfile, updateUserProfile } from '../../services/userService';
-import Navbar from '../../components/Navbar';
-import '../../styles/buyer/Profile.css';
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { updateUserProfile } from "../../services/userService";
+import Navbar from "../../components/Navbar";
+import "../../styles/buyer/Profile.css";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, role } = useAuth();
+
   const [profile, setProfile] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: ''
+    name: user?.name || "",
+    email: user?.email || "",
   });
+
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const fetchProfile = useCallback(async () => {
+  // Ambil data langsung dari user (localStorage lewat AuthContext)
+  const fetchProfile = useCallback(() => {
     try {
       setLoading(true);
-      const data = await getUserProfile();
-      setProfile(data || {
-        name: user?.name || '',
-        email: user?.email || '',
-        phone: '',
-        address: ''
-      });
+      setError("");
+
+      if (user) {
+        setProfile({
+          name: user.name || "",
+          email: user.email || "",
+        });
+      } else {
+        setError("User tidak ditemukan");
+      }
     } catch (err) {
-      console.error('Error fetching profile:', err);
-      setError('Gagal memuat profil');
+      console.error("Error fetching profile:", err);
+      setError("Gagal memuat profil");
     } finally {
       setLoading(false);
     }
-  }, [user?.name, user?.email]);
+  }, [user]);
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/auth');
+      navigate("/auth");
       return;
     }
-    
-    if (role !== 'BUYER') {
-      navigate('/dashboard');
+
+    if (role !== "BUYER") {
+      navigate("/dashboard");
       return;
     }
 
@@ -53,9 +57,9 @@ export default function ProfilePage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setProfile(prev => ({
+    setProfile((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -63,38 +67,36 @@ export default function ProfilePage() {
     e.preventDefault();
     try {
       setLoading(true);
-      setError('');
-      setMessage('');
+      setError("");
+      setMessage("");
 
       // Validasi email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(profile.email)) {
-        setError('Email tidak valid');
+        setError("Email tidak valid");
         setLoading(false);
         return;
       }
 
-      // Validasi nomor telepon
-      if (profile.phone && !/^\d{10,}$/.test(profile.phone.replace(/\D/g, ''))) {
-        setError('Nomor telepon harus minimal 10 digit');
-        setLoading(false);
-        return;
-      }
+      // Kirim hanya field yang memang ada: name & email
+      await updateUserProfile({
+        name: profile.name,
+        email: profile.email,
+      });
 
-      await updateUserProfile(profile);
-      setMessage('Profil berhasil diperbarui!');
+      setMessage("Profil berhasil diperbarui!");
       setIsEditing(false);
-      
-      setTimeout(() => setMessage(''), 3000);
+
+      setTimeout(() => setMessage(""), 3000);
     } catch (err) {
-      console.error('Error updating profile:', err);
-      setError('Gagal memperbarui profil');
+      console.error("Error updating profile:", err);
+      setError("Gagal memperbarui profil");
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading && !profile.name) {
+  if (loading && !profile.name && !profile.email) {
     return (
       <div className="profile-page">
         <Navbar />
@@ -121,7 +123,7 @@ export default function ProfilePage() {
 
           <form onSubmit={handleSubmit} className="profile-form">
             <div className="form-section">
-              <h2>Informasi Pribadi</h2>
+              <h2>Informasi Akun</h2>
 
               <div className="form-group">
                 <label htmlFor="name">Nama Lengkap</label>
@@ -151,33 +153,18 @@ export default function ProfilePage() {
                 />
               </div>
 
-              <div className="form-group">
-                <label htmlFor="phone">Nomor Telepon</label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={profile.phone}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className="form-input"
-                  placeholder="Masukkan nomor telepon (contoh: 081234567890)"
-                />
-              </div>
+             
 
-              <div className="form-group">
-                <label htmlFor="address">Alamat</label>
-                <textarea
-                  id="address"
-                  name="address"
-                  value={profile.address}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className="form-input textarea"
-                  placeholder="Masukkan alamat lengkap"
-                  rows="4"
-                ></textarea>
-              </div>
+              
+
+              {user?.created_at && (
+                <div className="form-group readonly-info">
+                  <label>Dibuat Pada</label>
+                  <div className="readonly-value">
+                    {new Date(user.created_at).toLocaleString("id-ID")}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="form-actions">
@@ -196,14 +183,14 @@ export default function ProfilePage() {
                     className="btn btn-primary"
                     disabled={loading}
                   >
-                    {loading ? 'Menyimpan...' : 'Simpan Perubahan'}
+                    {loading ? "Menyimpan..." : "Simpan Perubahan"}
                   </button>
                   <button
                     type="button"
                     className="btn btn-secondary"
                     onClick={() => {
                       setIsEditing(false);
-                      fetchProfile(); // Reset form
+                      fetchProfile(); // reset kembali ke data di localStorage/Auth
                     }}
                   >
                     Batal
@@ -214,16 +201,13 @@ export default function ProfilePage() {
           </form>
 
           <div className="profile-actions">
-            <button 
+            <button
               className="action-btn"
-              onClick={() => navigate('/my-tickets')}
+              onClick={() => navigate("/my-tickets")}
             >
               📋 Lihat Tiket Saya
             </button>
-            <button 
-              className="action-btn"
-              onClick={() => navigate('/events')}
-            >
+            <button className="action-btn" onClick={() => navigate("/events")}>
               🎫 Cari Event
             </button>
           </div>

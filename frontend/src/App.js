@@ -15,6 +15,7 @@ import BrowseEventsPage from './pages/buyer/BrowseEventsPage';
 import BuyerLoginPage from './pages/buyer/BuyerLoginPage';
 import MyTicketsPage from './pages/buyer/MyTicketsPage';
 import ProfilePage from './pages/buyer/ProfilePage';
+import CheckoutPage from './pages/buyer/CheckoutPage';
 
 // Promoter Pages
 import PromoterLoginPage from './pages/promoter/PromoterLoginPage';
@@ -52,6 +53,7 @@ function AppRoutes() {
       <Route path="/events" element={<BrowseEventsPage />} />
       <Route path="/event/:id" element={<EventDetailPage />} />
       <Route path="/atraksi" element={<AtraksiPage />} />
+      <Route path="/checkout" element={<CheckoutPage />} />
       
       {/* Buyer Routes */}
       <Route

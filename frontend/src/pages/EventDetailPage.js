@@ -1,21 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getEventById, getEventTickets } from '../services/eventService';
-import { useAuth } from '../context/AuthContext';
-import Navbar from '../components/Navbar';
-import '../styles/EventDetail.css';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { getEventById, getEventTickets } from "../services/eventService";
+import { useAuth } from "../context/AuthContext";
+import Navbar from "../components/Navbar";
+import "../styles/EventDetail.css";
+
+const ADMIN_FEE = 5000;
 
 export default function EventDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, isBuyer } = useAuth();
-  
+
+  // cek role seperti di Navbar
+  const { isAuthenticated, role } = useAuth();
+  const isBuyer = role === "BUYER";
+
   const [event, setEvent] = useState(null);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+
+  // ticketId -> quantity
   const [selectedTickets, setSelectedTickets] = useState({});
-  const [totalPrice, setTotalPrice] = useState(0);
+  const [subtotal, setSubtotal] = useState(0);
 
   useEffect(() => {
     fetchEventDetails();
@@ -25,66 +32,113 @@ export default function EventDetailPage() {
   const fetchEventDetails = async () => {
     try {
       setLoading(true);
+      setError("");
       const eventData = await getEventById(id);
       setEvent(eventData);
-      
-      // Fetch tickets untuk event ini
+
       try {
         const ticketData = await getEventTickets(id);
         setTickets(ticketData || []);
       } catch (err) {
-        console.log('Tickets not found or not available');
+        console.log("Tickets not found or not available");
         setTickets([]);
       }
+
+      // reset selection ketika pindah event
+      setSelectedTickets({});
+      setSubtotal(0);
     } catch (err) {
-      setError('Event tidak ditemukan');
+      setError("Event tidak ditemukan");
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTicketQuantityChange = (ticketId, quantity) => {
-    const newSelected = { ...selectedTickets };
-    if (quantity > 0) {
-      newSelected[ticketId] = quantity;
-    } else {
-      delete newSelected[ticketId];
-    }
-    setSelectedTickets(newSelected);
-    calculateTotal(newSelected);
-  };
-
-  const calculateTotal = (selected) => {
+  // Hitung ulang subtotal setiap selectedTickets / tickets berubah
+  useEffect(() => {
     let total = 0;
-    Object.keys(selected).forEach((ticketId) => {
-      const ticket = tickets.find(t => t.id === parseInt(ticketId));
-      if (ticket) {
-        total += ticket.price * selected[ticketId];
+
+    Object.entries(selectedTickets).forEach(([ticketId, qty]) => {
+      const ticket = tickets.find((t) => String(t.id) === String(ticketId));
+      if (!ticket) return;
+
+      const price = Number(ticket.price) || 0;
+      const quantity = Number(qty) || 0;
+
+      if (quantity > 0) {
+        total += price * quantity;
       }
     });
-    setTotalPrice(total);
+
+    setSubtotal(total);
+  }, [selectedTickets, tickets]);
+
+  const handleTicketQuantityChange = (ticketId, quantity) => {
+    const parsed = Number(quantity);
+    const safeQty = Number.isNaN(parsed) ? 0 : Math.max(0, parsed);
+
+    setSelectedTickets((prev) => {
+      const next = { ...prev };
+      if (safeQty > 0) {
+        next[ticketId] = safeQty;
+      } else {
+        delete next[ticketId];
+      }
+      return next;
+    });
   };
 
   const handleBuyTickets = () => {
-    if (Object.keys(selectedTickets).length === 0) {
-      alert('Pilih minimal satu tiket');
-      return;
-    }
-    
     if (!isAuthenticated) {
-      navigate('/');
+      // pola sama dengan Navbar: arahkan ke login/landing
+      navigate("/login");
       return;
     }
 
-    // Redirect to payment/checkout
-    navigate('/checkout', {
+    if (!isBuyer) {
+      alert("Akun ini tidak memiliki role pembeli.");
+      return;
+    }
+
+    if (subtotal <= 0) {
+      alert("Pilih minimal satu tiket.");
+      return;
+    }
+
+    // susun detail item tiket untuk checkout
+    const items = Object.entries(selectedTickets)
+      .map(([ticketId, qty]) => {
+        const ticket = tickets.find((t) => String(t.id) === String(ticketId));
+        if (!ticket) return null;
+
+        const price = Number(ticket.price) || 0;
+        const quantity = Number(qty) || 0;
+        const lineTotal = price * quantity;
+
+        return {
+          ticketId: ticket.id,
+          type: ticket.type,
+          price,
+          quantity,
+          subtotal: lineTotal,
+        };
+      })
+      .filter(Boolean);
+
+    const adminFee = subtotal > 0 ? ADMIN_FEE : 0;
+    const total = subtotal + adminFee;
+
+    // Redirect ke halaman checkout dengan data lengkap
+    navigate("/checkout", {
       state: {
         eventId: id,
-        selectedTickets: selectedTickets,
-        totalPrice: totalPrice,
-        event: event
-      }
+        event,
+        items,
+        subtotal,
+        adminFee,
+        total,
+      },
     });
   };
 
@@ -101,16 +155,19 @@ export default function EventDetailPage() {
     return (
       <div className="event-detail-page">
         <Navbar />
-        <div className="error">{error || 'Event tidak ditemukan'}</div>
+        <div className="error">{error || "Event tidak ditemukan"}</div>
       </div>
     );
   }
 
   const eventDate = new Date(event.date);
-  const eventTime = eventDate.toLocaleTimeString('id-ID', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  const eventTime = eventDate.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
   });
+
+  const adminFee = subtotal > 0 ? ADMIN_FEE : 0;
+  const totalPrice = subtotal + adminFee;
 
   return (
     <div className="event-detail-page">
@@ -120,7 +177,11 @@ export default function EventDetailPage() {
         {/* Poster Section */}
         <div className="poster-section">
           {event.poster_url ? (
-            <img src={event.poster_url} alt={event.title} className="event-poster" />
+            <img
+              src={event.poster_url}
+              alt={event.title}
+              className="event-poster"
+            />
           ) : (
             <div className="no-poster">No Image Available</div>
           )}
@@ -139,11 +200,11 @@ export default function EventDetailPage() {
                 <div>
                   <p className="meta-label">Tanggal</p>
                   <p className="meta-value">
-                    {eventDate.toLocaleDateString('id-ID', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
+                    {eventDate.toLocaleDateString("id-ID", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
                     })}
                   </p>
                 </div>
@@ -172,7 +233,7 @@ export default function EventDetailPage() {
             <div className="description-section">
               <h2>Tentang Event</h2>
               <p className="description-text">
-                {event.description || 'Tidak ada deskripsi untuk event ini.'}
+                {event.description || "Tidak ada deskripsi untuk event ini."}
               </p>
             </div>
 
@@ -212,35 +273,41 @@ export default function EventDetailPage() {
                       <div className="ticket-info">
                         <h3>{ticket.type}</h3>
                         <p className="ticket-price">
-                          Rp {ticket.price?.toLocaleString('id-ID')}
+                          Rp {Number(ticket.price).toLocaleString("id-ID")}
                         </p>
                       </div>
                       <div className="ticket-quantity">
-                        <button 
+                        <button
                           className="qty-btn"
-                          onClick={() => handleTicketQuantityChange(
-                            ticket.id, 
-                            (selectedTickets[ticket.id] || 0) - 1
-                          )}
+                          onClick={() =>
+                            handleTicketQuantityChange(
+                              ticket.id,
+                              (selectedTickets[ticket.id] || 0) - 1
+                            )
+                          }
                         >
                           −
                         </button>
-                        <input 
-                          type="number" 
+                        <input
+                          type="number"
                           min="0"
                           value={selectedTickets[ticket.id] || 0}
-                          onChange={(e) => handleTicketQuantityChange(
-                            ticket.id, 
-                            parseInt(e.target.value) || 0
-                          )}
+                          onChange={(e) =>
+                            handleTicketQuantityChange(
+                              ticket.id,
+                              e.target.value
+                            )
+                          }
                           className="qty-input"
                         />
-                        <button 
+                        <button
                           className="qty-btn"
-                          onClick={() => handleTicketQuantityChange(
-                            ticket.id, 
-                            (selectedTickets[ticket.id] || 0) + 1
-                          )}
+                          onClick={() =>
+                            handleTicketQuantityChange(
+                              ticket.id,
+                              (selectedTickets[ticket.id] || 0) + 1
+                            )
+                          }
                         >
                           +
                         </button>
@@ -255,33 +322,40 @@ export default function EventDetailPage() {
                 <div className="price-summary">
                   <div className="summary-row">
                     <span>Subtotal</span>
-                    <span>Rp {totalPrice.toLocaleString('id-ID')}</span>
+                    <span>Rp {subtotal.toLocaleString("id-ID")}</span>
                   </div>
                   <div className="summary-row">
                     <span>Biaya Admin</span>
-                    <span>Rp 5.000</span>
+                    <span>Rp {adminFee.toLocaleString("id-ID")}</span>
                   </div>
                   <div className="summary-row total">
                     <span>Total</span>
-                    <span>Rp {(totalPrice + 5000).toLocaleString('id-ID')}</span>
+                    <span>Rp {totalPrice.toLocaleString("id-ID")}</span>
                   </div>
                 </div>
               )}
 
               {/* Action Buttons */}
               <div className="action-buttons">
-                <button 
-                  className="btn-secondary"
-                  onClick={() => navigate('/')}
-                >
+                <button className="btn-secondary" onClick={() => navigate("/")}>
                   Kembali
                 </button>
-                <button 
-                  className={`btn-primary ${!isBuyer ? 'disabled' : ''}`}
+                <button
+                  className={`btn-primary ${
+                    !isBuyer || subtotal <= 0 || tickets.length === 0
+                      ? "disabled"
+                      : ""
+                  }`}
                   onClick={handleBuyTickets}
-                  disabled={!isBuyer || tickets.length === 0}
+                  disabled={!isBuyer || subtotal <= 0 || tickets.length === 0}
                 >
-                  {!isAuthenticated ? 'Login untuk Membeli' : 'Lanjut ke Pembayaran'}
+                  {!isAuthenticated
+                    ? "Login untuk Membeli"
+                    : !isBuyer
+                    ? "Akun bukan pembeli"
+                    : subtotal <= 0
+                    ? "Pilih tiket dulu"
+                    : "Lanjut ke Pembayaran"}
                 </button>
               </div>
             </div>
@@ -289,7 +363,10 @@ export default function EventDetailPage() {
             {/* Promo Banner */}
             <div className="promo-banner">
               <h4>🎉 Dapatkan Diskon</h4>
-              <p>Beli tiket sekarang dan dapatkan kesempatan memenangkan hadiah menarik!</p>
+              <p>
+                Beli tiket sekarang dan dapatkan kesempatan memenangkan hadiah
+                menarik!
+              </p>
             </div>
           </div>
         </div>
