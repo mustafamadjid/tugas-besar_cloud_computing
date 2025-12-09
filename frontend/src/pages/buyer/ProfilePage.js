@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { updateUserProfile } from "../../services/userService";
+import { getUserProfile, updateUserProfile } from "../../services/userService";
 import Navbar from "../../components/Navbar";
 import "../../styles/buyer/Profile.css";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, role, updateAuthUser } = useAuth();
+  const { user, isAuthenticated, role } = useAuth(); // <-- updateAuthUser dihapus
 
   const [profile, setProfile] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
+    name: "",
+    email: "",
+    created_at: null,
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -19,34 +20,37 @@ export default function ProfilePage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  // Ambil data langsung dari user (localStorage lewat AuthContext)
-  const fetchProfile = useCallback(() => {
+  // READ: ambil profile dari API buyer
+  const fetchProfile = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
 
-      if (user) {
-        setProfile({
-          name: user.name || "",
-          email: user.email || "",
-        });
-      } else {
-        setError("User tidak ditemukan");
+      const data = await getUserProfile(); // hit GET /api/buyer/profile
+
+      if (!data) {
+        setError("Profil tidak ditemukan");
+        return;
       }
+
+      setProfile({
+        name: data.name || "",
+        email: data.email || "",
+        created_at: data.created_at || null,
+      });
     } catch (err) {
       console.error("Error fetching profile:", err);
-      setError("Gagal memuat profil");
+      setError(err?.response?.data?.message || "Gagal memuat profil");
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, []); // <-- dependency updateAuthUser dihapus
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/auth");
       return;
     }
-
     if (role !== "BUYER") {
       navigate("/dashboard");
       return;
@@ -57,43 +61,41 @@ export default function ProfilePage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setProfile((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
+  // UPDATE: kirim perubahan ke API buyer
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       setLoading(true);
       setError("");
       setMessage("");
 
-      // Validasi email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(profile.email)) {
         setError("Email tidak valid");
-        setLoading(false);
         return;
       }
 
-      // Kirim hanya field yang memang ada: name & email
       const updatedUser = await updateUserProfile({
         name: profile.name,
         email: profile.email,
-      });
+      }); // hit PUT /api/buyer/profile
 
-      // Update context authentication
-      updateAuthUser(updatedUser);
+      setProfile({
+        name: updatedUser.name || profile.name,
+        email: updatedUser.email || profile.email,
+        created_at: updatedUser.created_at || profile.created_at,
+      });
 
       setMessage("Profil berhasil diperbarui!");
       setIsEditing(false);
-
       setTimeout(() => setMessage(""), 3000);
     } catch (err) {
       console.error("Error updating profile:", err);
-      setError("Gagal memperbarui profil");
+      setError(err?.response?.data?.message || "Gagal memperbarui profil");
     } finally {
       setLoading(false);
     }
@@ -164,14 +166,18 @@ export default function ProfilePage() {
                 >
                   {loading ? "Menyimpan..." : "Simpan Perubahan"}
                 </button>
+
                 <button
                   type="button"
                   className="btn btn-secondary"
+                  disabled={loading}
                   onClick={() => {
                     setIsEditing(false);
+                    // reset ke data terakhir yang ada di context/local
                     setProfile({
-                      name: user.name || "",
-                      email: user.email || "",
+                      name: user?.name || profile.name,
+                      email: user?.email || profile.email,
+                      created_at: user?.created_at || profile.created_at,
                     });
                   }}
                 >
@@ -194,11 +200,11 @@ export default function ProfilePage() {
                   <div className="readonly-value">{profile.email}</div>
                 </div>
 
-                {user?.created_at && (
+                {profile.created_at && (
                   <div className="form-group readonly-info">
                     <label>Dibuat Pada</label>
                     <div className="readonly-value">
-                      {new Date(user.created_at).toLocaleString("id-ID")}
+                      {new Date(profile.created_at).toLocaleString("id-ID")}
                     </div>
                   </div>
                 )}
@@ -208,12 +214,18 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   className="btn btn-primary"
-                  onClick={() => {
-                    setIsEditing(true);
-                    console.log("isEditing state set to true");
-                  }}
+                  onClick={() => setIsEditing(true)}
                 >
                   Edit Profil
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={fetchProfile}
+                  disabled={loading}
+                >
+                  {loading ? "Refresh..." : "Refresh Data"}
                 </button>
               </div>
             </div>
