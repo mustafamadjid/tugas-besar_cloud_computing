@@ -7,6 +7,142 @@ const ok = (res, message, data = null, status = 200) =>
 const fail = (res, message, status = 400, data = null) =>
   res.status(status).json({ success: false, message, data });
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// --- BUYER PROFILE ---
+
+// Ambil profile buyer berdasarkan user_id dari token
+
+const getBuyerProfile = async (req, res) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return fail(res, "Unauthorized", 401);
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, name, email, role, provider, google_uid, created_at
+       FROM users
+       WHERE id = $1`,
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return fail(res, "Buyer not found", 404);
+    }
+
+    const user = rows[0];
+
+    if (user.role !== "BUYER") {
+      return fail(res, "Forbidden: profile available for buyer only", 403);
+    }
+
+    return ok(res, "Profile fetched", user);
+  } catch (error) {
+    console.error("Failed to fetch buyer profile", error);
+    return fail(res, "Failed to fetch profile", 500, { error: error.message });
+  }
+};
+
+const updateBuyerProfile = async (req, res) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return fail(res, "Unauthorized", 401);
+  }
+
+  const { name, email } = req.body ?? {};
+
+  if (name == null && email == null) {
+    return fail(res, "Nothing to update", 400);
+  }
+
+  const trimmedName =
+    name != null && typeof name === "string" ? name.trim() : null;
+  const normalizedEmail =
+    email != null && typeof email === "string"
+      ? email.trim().toLowerCase()
+      : null;
+
+  if (trimmedName !== null && trimmedName.length === 0) {
+    return fail(res, "Name cannot be empty", 400);
+  }
+
+  if (normalizedEmail !== null && !emailRegex.test(normalizedEmail)) {
+    return fail(res, "Invalid email format", 400);
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, name, email, role, provider, google_uid, created_at
+       FROM users
+       WHERE id = $1`,
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return fail(res, "Buyer not found", 404);
+    }
+
+    const user = rows[0];
+
+    if (user.role !== "BUYER") {
+      return fail(res, "Forbidden: profile available for buyer only", 403);
+    }
+
+    if (normalizedEmail !== null && normalizedEmail !== user.email) {
+      const emailCheck = await pool.query(
+        `SELECT id FROM users WHERE email = $1 AND id <> $2`,
+        [normalizedEmail, userId]
+      );
+
+      if (emailCheck.rows.length > 0) {
+        return fail(res, "Email is already in use", 409);
+      }
+    }
+
+    const nameChanged =
+      trimmedName !== null && trimmedName !== user.name?.trim();
+    const emailChanged =
+      normalizedEmail !== null && normalizedEmail !== user.email;
+
+    if (!nameChanged && !emailChanged) {
+      return ok(res, "Nothing changed", user);
+    }
+
+    const updateParts = [];
+    const values = [];
+    let index = 1;
+
+    if (nameChanged) {
+      updateParts.push(`name = $${index++}`);
+      values.push(trimmedName);
+    }
+
+    if (emailChanged) {
+      updateParts.push(`email = $${index++}`);
+      values.push(normalizedEmail);
+    }
+
+    values.push(userId);
+
+    const updateQuery = `
+      UPDATE users
+      SET ${updateParts.join(", ")}
+      WHERE id = $${index}
+      RETURNING id, name, email, role, provider, google_uid, created_at
+    `;
+
+    const updated = await pool.query(updateQuery, values);
+
+    return ok(res, "Profile updated", updated.rows[0]);
+  } catch (error) {
+    console.error("Failed to update buyer profile", error);
+    return fail(res, "Failed to update profile", 500, { error: error.message });
+  }
+};
+
 // --- TICKETS ORDERING ---
 
 // Buyer order tickets
@@ -234,4 +370,9 @@ const getUserOrders = async (req, res) => {
   }
 };
 
-export { createOrder, getUserOrders };
+export {
+  getBuyerProfile,
+  updateBuyerProfile,
+  createOrder,
+  getUserOrders,
+};
