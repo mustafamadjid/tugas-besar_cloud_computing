@@ -7,7 +7,7 @@ import "../../styles/buyer/Profile.css";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, role } = useAuth();
+  const { user, isAuthenticated, role, updateAuthUser } = useAuth();
 
   const [profile, setProfile] = useState({
     name: user?.name || "",
@@ -79,10 +79,13 @@ export default function ProfilePage() {
       }
 
       // Kirim hanya field yang memang ada: name & email
-      await updateUserProfile({
+      const updatedUser = await updateUserProfile({
         name: profile.name,
         email: profile.email,
       });
+
+      // Update context authentication
+      updateAuthUser(updatedUser);
 
       setMessage("Profil berhasil diperbarui!");
       setIsEditing(false);
@@ -121,84 +124,100 @@ export default function ProfilePage() {
           {message && <div className="success-message">{message}</div>}
           {error && <div className="error-message">{error}</div>}
 
-          <form onSubmit={handleSubmit} className="profile-form">
-            <div className="form-section">
-              <h2>Informasi Akun</h2>
+          {isEditing ? (
+            <form onSubmit={handleSubmit} className="profile-form">
+              <div className="form-section">
+                <h2>Informasi Akun</h2>
 
-              <div className="form-group">
-                <label htmlFor="name">Nama Lengkap</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={profile.name}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className="form-input"
-                  placeholder="Masukkan nama lengkap"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="email">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={profile.email}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className="form-input"
-                  placeholder="Masukkan email"
-                />
-              </div>
-
-             
-
-              
-
-              {user?.created_at && (
-                <div className="form-group readonly-info">
-                  <label>Dibuat Pada</label>
-                  <div className="readonly-value">
-                    {new Date(user.created_at).toLocaleString("id-ID")}
-                  </div>
+                <div className="form-group">
+                  <label htmlFor="name">Nama Lengkap</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={profile.name}
+                    onChange={handleChange}
+                    className="form-input"
+                    placeholder="Masukkan nama lengkap"
+                  />
                 </div>
-              )}
-            </div>
 
-            <div className="form-actions">
-              {!isEditing ? (
+                <div className="form-group">
+                  <label htmlFor="email">Email</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={profile.email}
+                    onChange={handleChange}
+                    className="form-input"
+                    placeholder="Masukkan email"
+                  />
+                </div>
+              </div>
+
+              <div className="form-actions">
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? "Menyimpan..." : "Simpan Perubahan"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setProfile({
+                      name: user.name || "",
+                      email: user.email || "",
+                    });
+                  }}
+                >
+                  Batal
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="profile-view">
+              <div className="form-section">
+                <h2>Informasi Akun</h2>
+
+                <div className="form-group readonly-info">
+                  <label>Nama Lengkap</label>
+                  <div className="readonly-value">{profile.name}</div>
+                </div>
+
+                <div className="form-group readonly-info">
+                  <label>Email</label>
+                  <div className="readonly-value">{profile.email}</div>
+                </div>
+
+                {user?.created_at && (
+                  <div className="form-group readonly-info">
+                    <label>Dibuat Pada</label>
+                    <div className="readonly-value">
+                      {new Date(user.created_at).toLocaleString("id-ID")}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="form-actions">
                 <button
                   type="button"
                   className="btn btn-primary"
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => {
+                    setIsEditing(true);
+                    console.log("isEditing state set to true");
+                  }}
                 >
                   Edit Profil
                 </button>
-              ) : (
-                <>
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    disabled={loading}
-                  >
-                    {loading ? "Menyimpan..." : "Simpan Perubahan"}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => {
-                      setIsEditing(false);
-                      fetchProfile(); // reset kembali ke data di localStorage/Auth
-                    }}
-                  >
-                    Batal
-                  </button>
-                </>
-              )}
+              </div>
             </div>
-          </form>
+          )}
 
           <div className="profile-actions">
             <button
