@@ -1,16 +1,6 @@
-import admin from "firebase-admin";
+import admin from "../config/firebaseAdmin.js";
 import { pool } from "../config/database.js";
 import { generateToken } from "../utils/token.js";
-import serviceAccount from "../../firebase-service-account.json" with { type: "json" };
-
-// Inisialisasi Firebase Admin (sekali)
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-  console.log("✅ Firebase Admin initialized");
-}
-
 
 // Untuk Buyer
 // POST /api/auth/buyer
@@ -94,7 +84,6 @@ export const googleSignInBuyer = async (req, res) => {
   }
 };
 
-
 // Untuk Promoter
 // POST /api/auth/promoter
 export const googleSignInPromoter = async (req, res) => {
@@ -128,11 +117,12 @@ export const googleSignInPromoter = async (req, res) => {
     if (existing.rows.length > 0) {
       user = existing.rows[0];
 
-       if (user.role !== "PROMOTER") {
+      if (user.role !== "PROMOTER") {
         return res.status(403).json({
-        message: "Akun ini terdaftar sebagai CONSUMER. Tidak bisa login sebagai PROMOTER dengan email yang sama.",
-      });
-  }
+          message:
+            "Akun ini terdaftar sebagai CONSUMER. Tidak bisa login sebagai PROMOTER dengan email yang sama.",
+        });
+      }
 
       if (!user.google_uid) {
         const update = await pool.query(

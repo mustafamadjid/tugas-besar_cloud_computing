@@ -42,3 +42,36 @@ CREATE TABLE order_items (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE tickets (
+    id              BIGSERIAL PRIMARY KEY,
+    event_id        BIGINT NOT NULL,
+    type            VARCHAR(100) NOT NULL,
+    price           NUMERIC(12, 2) NOT NULL CHECK (price >= 0),
+    quantity        INTEGER NOT NULL CHECK (quantity >= 0),
+    sale_start_date TIMESTAMPTZ,
+    sale_end_date   TIMESTAMPTZ,
+
+    -- Relasi ke tabel events
+    CONSTRAINT fk_tickets_event
+        FOREIGN KEY (event_id)
+        REFERENCES events (id)
+        ON DELETE CASCADE,
+
+    -- Opsional tapi seharusnya kamu punya ini dari awal
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Trigger untuk jaga updated_at tetap konsisten (opsional tapi sehat)
+CREATE OR REPLACE FUNCTION set_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_timestamp_on_tickets
+BEFORE UPDATE ON tickets
+FOR EACH ROW
+EXECUTE FUNCTION set_timestamp();

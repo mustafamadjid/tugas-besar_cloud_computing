@@ -1,0 +1,9 @@
+firebase-service-account.json
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+.git
+.gitignore
+.env*
+sql
