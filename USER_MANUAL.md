@@ -1,4 +1,4 @@
-# Panduan Pengguna Aplikasi TiketKu
+# Panduan Pengguna Aplikasi GoTiketKu
 
 Panduan singkat ini membantu Anda menggunakan website tiket, baik sebagai **Buyer** (pembeli tiket) maupun **Promoter** (pembuat acara). Bahasa dibuat sederhana agar mudah diikuti pengguna awam.
 
