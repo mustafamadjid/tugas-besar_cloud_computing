@@ -34,9 +34,9 @@ Mengukur latensi, throughput, dan error rate backend saat menerima load.
 
 ## Hasil Observability GCP
 - Screenshot latency Cloud Run: 
- -![Cloud Run latency ](performance/screenshots/latency-gcp-metrics.png)`
+  - ![Cloud Run latency ](performance/screenshots/latency-gcp-metrics.png)`
 
 
 - Screenshot request count: 
- -![Cloud Run request count](performance/screenshots/requestcount-gcp-metrics.png)
+  - ![Cloud Run request count](performance/screenshots/requestcount-gcp-metrics.png)
 
