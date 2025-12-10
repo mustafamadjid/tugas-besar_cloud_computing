@@ -17,22 +17,22 @@ Mengukur latensi, throughput, dan error rate backend saat menerima load.
 
 ## Hasil k6
 ### GET /api/events
-- RPS rata-rata: _isi_
-- Latency avg: _isi_
-- p95 latency: _isi_
-- Error rate: _isi_
+- RPS rata-rata: **3.77 req/s**
+- Latency avg: **26.5 ms**
+- p95 latency: **34.71 ms**
+- Error rate: **0.00% (0 dari 455 request)**
 - Screenshot output k6:
-  - _tempel di sini_ `![k6 GET events](path/ke-screenshot-get.png)`
+  -![k6 GET events](performance/screenshots/get-api-events.png)
 
-### POST /api/buyer/checkout
-- RPS rata-rata: _isi_
-- Latency avg: _isi_
-- p95 latency: _isi_
-- Error rate: _isi_
+### POST /api/buyer/order
+- RPS rata-rata: **2.30 req/s**
+- Latency avg: **35.58 ms**
+- p95 latency: **42.4 ms**
+- Error rate: **0.00% (0 dari 276 request gagal)**
 - Screenshot output k6:
-  - _tempel di sini_ `![k6 POST checkout](path/ke-screenshot-post.png)`
+  - ![k6 POST order](performance/screenshots/post-create-order.png)
 
 ## Hasil Observability GCP
-- Screenshot latency p95 Cloud Run: _tempel di sini_ `![Cloud Run p95](path/ke-screenshot-p95.png)`
-- Screenshot request count: _tempel di sini_ `![Cloud Run request count](path/ke-screenshot-request.png)`
-- Screenshot errors: _tempel di sini_ `![Cloud Run errors](path/ke-screenshot-errors.png)`
+- Screenshot latency Cloud Run: ![Cloud Run latency ](performance/screenshots/latency-gcp-metrics.png)`
+- Screenshot request count: [Cloud Run request count](performance/screenshots/requestcount-gcp-metrics.png)
+
