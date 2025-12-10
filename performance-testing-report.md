@@ -33,6 +33,10 @@ Mengukur latensi, throughput, dan error rate backend saat menerima load.
   - ![k6 POST order](performance/screenshots/post-create-order.png)
 
 ## Hasil Observability GCP
-- Screenshot latency Cloud Run: ![Cloud Run latency ](performance/screenshots/latency-gcp-metrics.png)`
-- Screenshot request count: [Cloud Run request count](performance/screenshots/requestcount-gcp-metrics.png)
+- Screenshot latency Cloud Run: 
+![Cloud Run latency ](performance/screenshots/latency-gcp-metrics.png)`
+
+
+- Screenshot request count: 
+![Cloud Run request count](performance/screenshots/requestcount-gcp-metrics.png)
 
