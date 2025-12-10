@@ -1,0 +1,4 @@
+# Terraform local state
+.terraform/
+terraform/.terraform/
+terraform.tfstate*
