@@ -10,42 +10,38 @@ dotenv.config();
 
 const app = express();
 
-// Bisa isi banyak origin yang diizinkan
 const allowedOrigins = [
   "http://localhost:3000",
-  process.env.FRONTEND_URL, // FE di Cloud Run atau custom domain
-].filter(Boolean); // buang null/undefined
+  ...(process.env.FRONTEND_URL || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
+];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
+      if (!origin) return callback(null, true); // untuk curl/postman
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      return callback(new Error("Not allowed by CORS"));
+      return callback(new Error(`Not allowed by CORS: ${origin}`));
     },
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // kalau kamu pakai cookie/session
   })
 );
 
 app.use(express.json());
 
-// Health check
-app.get("/", (req, res) => {
-  res.json({ message: "API Ready" });
-});
+app.get("/", (req, res) => res.json({ message: "API Ready" }));
 
-// Routes
 app.use("/api/auth", googleAuthRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/buyer", buyerRoutes);
 
-// Start server
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server berjalan di port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server berjalan di port ${PORT}`));
