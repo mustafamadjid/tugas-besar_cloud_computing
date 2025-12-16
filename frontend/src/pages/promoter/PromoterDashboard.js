@@ -19,6 +19,7 @@ import {
   FaTrashAlt,
   FaPlus,
   FaHistory,
+  FaSync,
 } from "react-icons/fa";
 
 import { FiMapPin, FiCalendar } from "react-icons/fi";
@@ -119,9 +120,20 @@ export default function PromoterDashboard() {
   const [loadingSales, setLoadingSales] = useState(false);
   const [salesError, setSalesError] = useState("");
 
+  // ===== PROFILE STATE =====
+  const [promoterProfile, setPromoterProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
+  const [profileError, setProfileError] = useState("");
+
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  useEffect(() => {
+    if (activeSection === "profile" && !promoterProfile && !loadingProfile) {
+      fetchPromoterProfile();
+    }
+  }, [activeSection, promoterProfile, loadingProfile]);
 
   const fetchEvents = async () => {
     try {
@@ -140,6 +152,22 @@ export default function PromoterDashboard() {
       );
     } finally {
       setLoadingEvents(false);
+    }
+  };
+
+  const fetchPromoterProfile = async () => {
+    try {
+      setLoadingProfile(true);
+      setProfileError("");
+
+      const res = await api.get("/api/promoter/profile");
+      setPromoterProfile(res.data?.data || null);
+    } catch (err) {
+      setProfileError(
+        err.response?.data?.message || err.message || "Gagal memuat profil"
+      );
+    } finally {
+      setLoadingProfile(false);
     }
   };
 
@@ -1281,6 +1309,69 @@ export default function PromoterDashboard() {
               <p className="info-text">
                 Kelola informasi profil dan brand event Anda
               </p>
+
+              <div className="profile-card">
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 16,
+                    marginBottom: 16,
+                  }}
+                >
+                  <FaUserCircle size={48} color="#4c51bf" />
+                  <div>
+                    <h3 style={{ margin: 0 }}>
+                      {promoterProfile?.name || "Nama belum tersedia"}
+                    </h3>
+                    <p style={{ margin: 0, color: "#4a5568" }}>
+                      {promoterProfile?.email || "Email belum tersedia"}
+                    </p>
+                  </div>
+                </div>
+
+                {profileError && (
+                  <div className="error-text" style={{ marginBottom: 12 }}>
+                    {profileError}
+                  </div>
+                )}
+
+                {loadingProfile && (
+                  <p style={{ color: "#4a5568", marginBottom: 12 }}>
+                    Memuat data profil...
+                  </p>
+                )}
+
+                {promoterProfile && !loadingProfile && (
+                  <div className="profile-details">
+                    <div className="detail-row">
+                      <span>Peran</span>
+                      <strong>{promoterProfile.role}</strong>
+                    </div>
+                    <div className="detail-row">
+                      <span>Provider</span>
+                      <strong>{promoterProfile.provider}</strong>
+                    </div>
+                    <div className="detail-row">
+                      <span>Google UID</span>
+                      <strong>{promoterProfile.google_uid || "-"}</strong>
+                    </div>
+                    <div className="detail-row">
+                      <span>Bergabung</span>
+                      <strong>{formatDateTime(promoterProfile.created_at)}</strong>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  className="btn-secondary"
+                  style={{ marginTop: 12, display: "inline-flex", gap: 8, alignItems: "center" }}
+                  onClick={fetchPromoterProfile}
+                  disabled={loadingProfile}
+                >
+                  <FaSync /> {loadingProfile ? "Menyegarkan..." : "Muat Ulang Profil"}
+                </button>
+              </div>
             </section>
           )}
         </main>
