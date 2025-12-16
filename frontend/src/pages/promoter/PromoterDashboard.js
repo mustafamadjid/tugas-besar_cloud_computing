@@ -555,16 +555,6 @@ export default function PromoterDashboard() {
 
             <button
               className={`menu-item ${
-                activeSection === "checkin" ? "active" : ""
-              }`}
-              onClick={() => setActiveSection("checkin")}
-            >
-              <FaCheckCircle style={{ marginRight: 8 }} />
-              Check-in
-            </button>
-
-            <button
-              className={`menu-item ${
                 activeSection === "profile" ? "active" : ""
               }`}
               onClick={() => setActiveSection("profile")}
@@ -1283,19 +1273,6 @@ export default function PromoterDashboard() {
                   )}
                 </>
               )}
-            </section>
-          )}
-
-          {activeSection === "checkin" && (
-            <section className="section-checkin">
-              <div className="section-header">
-                <h2 style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <FaCheckCircle /> Check-in Tiket
-                </h2>
-              </div>
-              <p className="info-text">
-                Scan QR Code untuk validasi tiket masuk event
-              </p>
             </section>
           )}
 
