@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import googleAuthRoutes from "./src/routes/googleAuthRoutes.js";
 import eventRoutes from "./src/routes/eventRoutes.js";
 import buyerRoutes from "./src/routes/buyerRoutes.js";
+import promoterRoutes from "./src/routes/promoterRoutes.js";
 
 dotenv.config();
 
@@ -42,6 +43,7 @@ app.get("/", (req, res) => res.json({ message: "API Ready" }));
 app.use("/api/auth", googleAuthRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/buyer", buyerRoutes);
+app.use("/api/promoter", promoterRoutes);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server berjalan di port ${PORT}`));
