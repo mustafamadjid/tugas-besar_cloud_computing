@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaMapMarkerAlt } from 'react-icons/fa';
 import '../styles/EventCarousel.css';
 
 export default function EventCarousel({ events = [] }) {
@@ -47,20 +48,22 @@ export default function EventCarousel({ events = [] }) {
                 <div className="slide-overlay"></div>
               </div>
 
-              <div className="slide-content">
-                <h2 className="slide-title">{event.title}</h2>
-                <p className="slide-date">
-                  {new Date(event.date).toLocaleDateString('id-ID', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </p>
-                {event.location && (
-                  <p className="slide-location">📍 {event.location}</p>
-                )}
-                <button className="slide-btn">Lihat Sekarang →</button>
-              </div>
+                <div className="slide-content">
+                  <h2 className="slide-title">{event.title}</h2>
+                  <p className="slide-date">
+                    {new Date(event.date).toLocaleDateString('id-ID', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
+                  {event.location && (
+                    <p className="slide-location">
+                      <FaMapMarkerAlt /> {event.location}
+                    </p>
+                  )}
+                  <button className="slide-btn">Lihat Sekarang →</button>
+                </div>
             </div>
           ))}
         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
+import { FaFacebookF, FaInstagram, FaMapMarkerAlt, FaTwitter } from 'react-icons/fa';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { getAllEvents } from '../services/eventService';
@@ -85,16 +85,18 @@ export default function LandingPage() {
                     )}
                     <div className="event-badge">Promo</div>
                   </div>
-                  <div className="event-details">
-                    <h3>{event.title}</h3>
-                    <div className="event-meta">
-                      <span className="date">
-                        <FaRegCalendarAlt /> {new Date(event.date).toLocaleDateString('id-ID')}
-                      </span>
-                      {event.location && (
-                        <span className="location">📍 {event.location}</span>
-                      )}
-                    </div>
+                    <div className="event-details">
+                      <h3>{event.title}</h3>
+                      <div className="event-meta">
+                        <span className="date">
+                          <FaRegCalendarAlt /> {new Date(event.date).toLocaleDateString('id-ID')}
+                        </span>
+                        {event.location && (
+                          <span className="location">
+                            <FaMapMarkerAlt /> {event.location}
+                          </span>
+                        )}
+                      </div>
                     <p className="description">
                       {event.description?.substring(0, 100)}...
                     </p>

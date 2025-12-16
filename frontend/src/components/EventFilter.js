@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FaCampground, FaChalkboardTeacher, FaFutbol, FaMicrophoneAlt, FaMusic, FaTheaterMasks } from 'react-icons/fa';
 import '../styles/EventFilter.css';
 
 export default function EventFilter({ onFilter, category = 'Event' }) {
@@ -108,21 +109,33 @@ export default function EventFilter({ onFilter, category = 'Event' }) {
       {/* Genre */}
       <div className="filter-group">
         <label>Genre Event</label>
-        <select 
-          name="genre"
-          value={filters.genre}
-          onChange={handleInputChange}
-          className="filter-select"
-        >
-          <option value="">Semua Genre</option>
-          <option value="konser">🎵 Konser Musik</option>
-          <option value="festival">🎪 Festival</option>
-          <option value="workshop">👨‍🏫 Workshop</option>
-          <option value="olahraga">⚽ Olahraga</option>
-          <option value="teater">🎭 Teater</option>
-          <option value="stand-up">🎤 Stand-up Comedy</option>
-        </select>
-      </div>
+          <select
+            name="genre"
+            value={filters.genre}
+            onChange={handleInputChange}
+            className="filter-select"
+          >
+            <option value="">Semua Genre</option>
+            <option value="konser">
+              <FaMusic /> Konser Musik
+            </option>
+            <option value="festival">
+              <FaCampground /> Festival
+            </option>
+            <option value="workshop">
+              <FaChalkboardTeacher /> Workshop
+            </option>
+            <option value="olahraga">
+              <FaFutbol /> Olahraga
+            </option>
+            <option value="teater">
+              <FaTheaterMasks /> Teater
+            </option>
+            <option value="stand-up">
+              <FaMicrophoneAlt /> Stand-up Comedy
+            </option>
+          </select>
+        </div>
 
       {/* Price Range */}
       <div className="filter-group">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaCampground, FaGoogle, FaTicketAlt, FaUserPlus, FaUsers } from 'react-icons/fa';
 import { googleSignInBuyer, googleSignInPromoter } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Auth.css';
@@ -49,30 +50,32 @@ export default function AuthSelector() {
     }
   };
 
-  return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-header">
-          <span className="auth-icon">🎫</span>
-          <h1>KOMA</h1>
-        </div>
-        <p className="subtitle">Platform Pembelian Tiket Event Terpercaya</p>
+      return (
+        <div className="auth-container">
+          <div className="auth-card">
+            <div className="auth-header">
+              <span className="auth-icon">
+                <FaTicketAlt />
+              </span>
+              <h1>KOMA</h1>
+            </div>
+            <p className="subtitle">Platform Pembelian Tiket Event Terpercaya</p>
 
         {/* Toggle Switch */}
-        <div className="user-type-toggle">
-          <button
-            className={`toggle-btn left ${userType === 'BUYER' ? 'active' : ''}`}
-            onClick={() => setUserType('BUYER')}
-          >
-            👥 Penonton
-          </button>
-          <button
-            className={`toggle-btn right ${userType === 'PROMOTER' ? 'active' : ''}`}
-            onClick={() => setUserType('PROMOTER')}
-          >
-            🎪 Promotor
-          </button>
-        </div>
+            <div className="user-type-toggle">
+              <button
+                className={`toggle-btn left ${userType === 'BUYER' ? 'active' : ''}`}
+                onClick={() => setUserType('BUYER')}
+              >
+                <FaUsers /> Penonton
+              </button>
+              <button
+                className={`toggle-btn right ${userType === 'PROMOTER' ? 'active' : ''}`}
+                onClick={() => setUserType('PROMOTER')}
+              >
+                <FaCampground /> Promotor
+              </button>
+            </div>
 
         {error && <div className="error-message">{error}</div>}
 
@@ -92,22 +95,30 @@ export default function AuthSelector() {
         </div>
 
         {/* Login and Register Buttons */}
-        <div className="auth-buttons">
-          <button 
-            className="auth-btn login-btn"
-            onClick={handleLogin}
-            disabled={loading}
-          >
-            {loading ? 'Loading...' : '🔑 Masuk dengan Google'}
-          </button>
-          <button 
-            className="auth-btn register-btn"
-            onClick={() => handleLogin()}
-            disabled={loading}
-          >
-            {loading ? 'Loading...' : '✏️ Daftar dengan Google'}
-          </button>
-        </div>
+            <div className="auth-buttons">
+              <button
+                className="auth-btn login-btn"
+                onClick={handleLogin}
+                disabled={loading}
+              >
+                {loading ? 'Loading...' : (
+                  <>
+                    <FaGoogle /> Masuk dengan Google
+                  </>
+                )}
+              </button>
+              <button
+                className="auth-btn register-btn"
+                onClick={() => handleLogin()}
+                disabled={loading}
+              >
+                {loading ? 'Loading...' : (
+                  <>
+                    <FaUserPlus /> Daftar dengan Google
+                  </>
+                )}
+              </button>
+            </div>
 
         <p className="info-text">
           Gunakan akun Google untuk masuk atau mendaftar

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaClipboardList, FaTicketAlt } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { getUserProfile, updateUserProfile } from "../../services/userService";
 import Navbar from "../../components/Navbar";
@@ -236,10 +237,10 @@ export default function ProfilePage() {
               className="action-btn"
               onClick={() => navigate("/my-tickets")}
             >
-              📋 Lihat Tiket Saya
+              <FaClipboardList /> Lihat Tiket Saya
             </button>
             <button className="action-btn" onClick={() => navigate("/events")}>
-              🎫 Cari Event
+              <FaTicketAlt /> Cari Event
             </button>
           </div>
         </div>

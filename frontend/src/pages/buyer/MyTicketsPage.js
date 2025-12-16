@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaCalendarAlt, FaCheckCircle, FaFrownOpen, FaHourglassHalf, FaTicketAlt, FaTimesCircle } from "react-icons/fa";
 import { getUserOrders } from "../../services/orderService";
 import Navbar from "../../components/Navbar";
 import "../../styles/buyer/MyTickets.css";
@@ -53,15 +54,35 @@ export default function MyTicketsPage() {
     const status = order.payment_status;
 
     if (status === "PENDING")
-      return <span className="badge pending">⏳ Menunggu</span>;
+      return (
+        <span className="badge pending">
+          <FaHourglassHalf /> Menunggu
+        </span>
+      );
     if (status === "COMPLETED" && isOrderHasUsedTickets(order))
-      return <span className="badge used">✓ Sebagian / Sudah Digunakan</span>;
+      return (
+        <span className="badge used">
+          <FaCheckCircle /> Sebagian / Sudah Digunakan
+        </span>
+      );
     if (status === "COMPLETED")
-      return <span className="badge completed">✓ Aktif</span>;
+      return (
+        <span className="badge completed">
+          <FaCheckCircle /> Aktif
+        </span>
+      );
     if (status === "FAILED")
-      return <span className="badge failed">✗ Gagal</span>;
+      return (
+        <span className="badge failed">
+          <FaTimesCircle /> Gagal
+        </span>
+      );
     if (status === "CANCELLED")
-      return <span className="badge cancelled">✗ Batal</span>;
+      return (
+        <span className="badge cancelled">
+          <FaTimesCircle /> Batal
+        </span>
+      );
     return <span className="badge">{status}</span>;
   };
 
@@ -77,7 +98,9 @@ export default function MyTicketsPage() {
 
       <div className="tickets-container">
         <div className="tickets-header">
-          <h1>🎫 Tiket Saya</h1>
+          <h1>
+            <FaTicketAlt /> Tiket Saya
+          </h1>
           <p>Kelola tiket konser Anda</p>
         </div>
 
@@ -87,19 +110,19 @@ export default function MyTicketsPage() {
             className={`tab-btn ${activeTab === "active" ? "active" : ""}`}
             onClick={() => setActiveTab("active")}
           >
-            📅 Tiket Aktif
+            <FaCalendarAlt /> Tiket Aktif
           </button>
           <button
             className={`tab-btn ${activeTab === "used" ? "active" : ""}`}
             onClick={() => setActiveTab("used")}
           >
-            ✓ Sudah Digunakan
+            <FaCheckCircle /> Sudah Digunakan
           </button>
           <button
             className={`tab-btn ${activeTab === "cancelled" ? "active" : ""}`}
             onClick={() => setActiveTab("cancelled")}
           >
-            ✗ Dibatalkan
+            <FaTimesCircle /> Dibatalkan
           </button>
         </div>
 
@@ -110,7 +133,7 @@ export default function MyTicketsPage() {
         ) : filteredOrders.length === 0 ? (
           <div className="no-tickets">
             <p>
-              😅 Belum ada tiket{" "}
+              <FaFrownOpen /> Belum ada tiket{" "}
               {activeTab === "active" ? "aktif" : "di kategori ini"}
             </p>
             <button className="btn-browse" onClick={() => navigate("/events")}>
@@ -149,7 +172,9 @@ export default function MyTicketsPage() {
               return (
                 <div key={order.id} className="ticket-card">
                   <div className="ticket-left">
-                    <div className="ticket-icon">🎟️</div>
+                    <div className="ticket-icon">
+                      <FaTicketAlt />
+                    </div>
                     <div className="ticket-info">
                       <h3 className="ticket-event">{eventTitle}</h3>
                       <p className="ticket-date">{dateLabel}</p>

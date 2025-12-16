@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { FaCalendarAlt, FaClock, FaGift, FaMapMarkerAlt } from "react-icons/fa";
 import { getEventById, getEventTickets } from "../services/eventService";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
@@ -194,13 +195,15 @@ export default function EventDetailPage() {
             <h1 className="event-title">{event.title}</h1>
 
             {/* Event Meta Info */}
-            <div className="meta-info">
-              <div className="meta-item">
-                <span className="meta-icon">📅</span>
-                <div>
-                  <p className="meta-label">Tanggal</p>
-                  <p className="meta-value">
-                    {eventDate.toLocaleDateString("id-ID", {
+              <div className="meta-info">
+                <div className="meta-item">
+                  <span className="meta-icon">
+                    <FaCalendarAlt />
+                  </span>
+                  <div>
+                    <p className="meta-label">Tanggal</p>
+                    <p className="meta-value">
+                      {eventDate.toLocaleDateString("id-ID", {
                       weekday: "long",
                       year: "numeric",
                       month: "long",
@@ -208,24 +211,28 @@ export default function EventDetailPage() {
                     })}
                   </p>
                 </div>
-              </div>
-
-              <div className="meta-item">
-                <span className="meta-icon">🕐</span>
-                <div>
-                  <p className="meta-label">Waktu</p>
-                  <p className="meta-value">{eventTime}</p>
                 </div>
-              </div>
 
-              {event.location && (
                 <div className="meta-item">
-                  <span className="meta-icon">📍</span>
+                  <span className="meta-icon">
+                    <FaClock />
+                  </span>
                   <div>
-                    <p className="meta-label">Lokasi</p>
-                    <p className="meta-value">{event.location}</p>
+                    <p className="meta-label">Waktu</p>
+                    <p className="meta-value">{eventTime}</p>
                   </div>
                 </div>
+
+                {event.location && (
+                  <div className="meta-item">
+                    <span className="meta-icon">
+                      <FaMapMarkerAlt />
+                    </span>
+                    <div>
+                      <p className="meta-label">Lokasi</p>
+                      <p className="meta-value">{event.location}</p>
+                    </div>
+                  </div>
               )}
             </div>
 
@@ -362,7 +369,9 @@ export default function EventDetailPage() {
 
             {/* Promo Banner */}
             <div className="promo-banner">
-              <h4>🎉 Dapatkan Diskon</h4>
+              <h4>
+                <FaGift /> Dapatkan Diskon
+              </h4>
               <p>
                 Beli tiket sekarang dan dapatkan kesempatan memenangkan hadiah
                 menarik!

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { FaCalendarAlt, FaMapMarkerAlt, FaTimesCircle } from 'react-icons/fa';
 import { getAllEvents } from '../services/eventService';
 import EventFilter from '../components/EventFilter';
 import Navbar from '../components/Navbar';
@@ -113,13 +114,15 @@ export default function AtraksiPage() {
 
           {error && <div className="error-message">{error}</div>}
 
-          {loading ? (
-            <div className="loading">Memuat atraksi...</div>
-          ) : filteredEvents.length === 0 ? (
-            <div className="no-results">
-              <p>❌ Tidak ada atraksi yang sesuai dengan filter Anda</p>
-            </div>
-          ) : (
+            {loading ? (
+              <div className="loading">Memuat atraksi...</div>
+            ) : filteredEvents.length === 0 ? (
+              <div className="no-results">
+                <p>
+                  <FaTimesCircle /> Tidak ada atraksi yang sesuai dengan filter Anda
+                </p>
+              </div>
+            ) : (
             <div className="events-grid">
               {filteredEvents.map((event) => (
                 <div 
@@ -142,16 +145,16 @@ export default function AtraksiPage() {
                   <div className="event-card-content">
                     <h3 className="event-title">{event.title}</h3>
                     
-                    <div className="event-meta">
-                      <span className="meta-date">
-                        📅 {new Date(event.date).toLocaleDateString('id-ID')}
-                      </span>
-                      {event.location && (
-                        <span className="meta-location">
-                          📍 {event.location}
+                      <div className="event-meta">
+                        <span className="meta-date">
+                          <FaCalendarAlt /> {new Date(event.date).toLocaleDateString('id-ID')}
                         </span>
-                      )}
-                    </div>
+                        {event.location && (
+                          <span className="meta-location">
+                            <FaMapMarkerAlt /> {event.location}
+                          </span>
+                        )}
+                      </div>
 
                     <p className="event-description">
                       {event.description?.substring(0, 80)}...
