@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaCalendarAlt, FaClock, FaGift, FaMapMarkerAlt } from "react-icons/fa";
+import { FaCalendarAlt, FaGift, FaMapMarkerAlt } from "react-icons/fa";
 import { getEventById, getEventTickets } from "../services/eventService";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
@@ -162,11 +162,6 @@ export default function EventDetailPage() {
   }
 
   const eventDate = new Date(event.date);
-  const eventTime = eventDate.toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
   const adminFee = subtotal > 0 ? ADMIN_FEE : 0;
   const totalPrice = subtotal + adminFee;
 
@@ -211,16 +206,6 @@ export default function EventDetailPage() {
                     })}
                   </p>
                 </div>
-                </div>
-
-                <div className="meta-item">
-                  <span className="meta-icon">
-                    <FaClock />
-                  </span>
-                  <div>
-                    <p className="meta-label">Waktu</p>
-                    <p className="meta-value">{eventTime}</p>
-                  </div>
                 </div>
 
                 {event.location && (
