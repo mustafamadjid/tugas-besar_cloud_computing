@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { FaMapMarkerAlt } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
@@ -151,7 +152,9 @@ export default function CheckoutPage() {
                     <p>{eventDateString}</p>
                     <p>{eventTimeString}</p>
                     {event.location && (
-                      <p className="event-location">📍 {event.location}</p>
+                      <p className="event-location">
+                        <FaMapMarkerAlt /> {event.location}
+                      </p>
                     )}
                   </div>
                 </div>

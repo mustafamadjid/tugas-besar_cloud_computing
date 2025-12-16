@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { FaCalendarAlt, FaMapMarkerAlt, FaTimesCircle } from "react-icons/fa";
 import { getAllEvents } from "../../services/eventService";
 import EventFilter from "../../components/EventFilter";
 import "../../styles/buyer/BrowseEvents.css";
@@ -129,7 +130,9 @@ export default function BrowseEventsPage() {
             <div className="loading">Memuat events...</div>
           ) : filteredEvents.length === 0 ? (
             <div className="no-results">
-              <p>❌ Tidak ada event yang sesuai dengan filter Anda</p>
+              <p>
+                <FaTimesCircle /> Tidak ada event yang sesuai dengan filter Anda
+              </p>
             </div>
           ) : (
             <div className="events-grid">
@@ -156,11 +159,11 @@ export default function BrowseEventsPage() {
 
                     <div className="event-meta">
                       <span className="meta-date">
-                        📅 {new Date(event.date).toLocaleDateString("id-ID")}
+                        <FaCalendarAlt /> {new Date(event.date).toLocaleDateString("id-ID")}
                       </span>
                       {event.location && (
                         <span className="meta-location">
-                          📍 {event.location}
+                          <FaMapMarkerAlt /> {event.location}
                         </span>
                       )}
                     </div>

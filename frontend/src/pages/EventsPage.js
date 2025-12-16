@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
 import { getAllEvents } from '../services/eventService';
 import Navbar from '../components/Navbar';
 import '../styles/EventsPage.css';
@@ -66,10 +67,12 @@ export default function EventsPage() {
                 <div className="event-info">
                   <h3>{event.title}</h3>
                   <p className="event-date">
-                    📅 {new Date(event.date).toLocaleDateString('id-ID')}
+                    <FaCalendarAlt /> {new Date(event.date).toLocaleDateString('id-ID')}
                   </p>
                   {event.location && (
-                    <p className="event-location">📍 {event.location}</p>
+                    <p className="event-location">
+                      <FaMapMarkerAlt /> {event.location}
+                    </p>
                   )}
                   <button className="detail-btn">Lihat Detail</button>
                 </div>

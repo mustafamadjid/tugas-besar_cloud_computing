@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaSearch, FaShoppingCart, FaTicketAlt } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Navbar.css';
 
@@ -42,7 +43,9 @@ export default function Navbar() {
         {/* Left: Logo & Tabs */}
         <div className="navbar-left">
           <div className="navbar-brand" onClick={() => handleNavClick('/')}>
-            <span className="brand-icon">🎫</span>
+            <span className="brand-icon">
+              <FaTicketAlt />
+            </span>
             <span className="brand-name">TIKETKU</span>
           </div>
 
@@ -78,14 +81,16 @@ export default function Navbar() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
             />
-            <button type="submit" className="search-btn">🔍</button>
+            <button type="submit" className="search-btn">
+              <FaSearch />
+            </button>
           </form>
         </div>
 
         {/* Right: Cart & Auth */}
         <div className="navbar-right">
           <button className="cart-btn">
-            🛒
+            <FaShoppingCart />
             <span className="cart-badge">0</span>
           </button>
 
@@ -136,7 +141,9 @@ export default function Navbar() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button type="submit">🔍</button>
+              <button type="submit">
+                <FaSearch />
+              </button>
             </form>
 
             <div className="mobile-nav-links">
