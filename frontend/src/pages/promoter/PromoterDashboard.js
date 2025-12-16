@@ -1311,22 +1311,15 @@ export default function PromoterDashboard() {
               </p>
 
               <div className="profile-card">
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 16,
-                    marginBottom: 16,
-                  }}
-                >
-                  <FaUserCircle size={48} color="#4c51bf" />
-                  <div>
-                    <h3 style={{ margin: 0 }}>
+                <div className="profile-header">
+                  <div className="profile-avatar">
+                    <FaUserCircle size={48} />
+                  </div>
+                  <div className="profile-info">
+                    <h3>
                       {promoterProfile?.name || "Nama belum tersedia"}
                     </h3>
-                    <p style={{ margin: 0, color: "#4a5568" }}>
-                      {promoterProfile?.email || "Email belum tersedia"}
-                    </p>
+                    <p>{promoterProfile?.email || "Email belum tersedia"}</p>
                   </div>
                 </div>
 
@@ -1336,11 +1329,7 @@ export default function PromoterDashboard() {
                   </div>
                 )}
 
-                {loadingProfile && (
-                  <p style={{ color: "#4a5568", marginBottom: 12 }}>
-                    Memuat data profil...
-                  </p>
-                )}
+                {loadingProfile && <p className="profile-loading">Memuat data profil...</p>}
 
                 {promoterProfile && !loadingProfile && (
                   <div className="profile-details">
@@ -1364,8 +1353,7 @@ export default function PromoterDashboard() {
                 )}
 
                 <button
-                  className="btn-secondary"
-                  style={{ marginTop: 12, display: "inline-flex", gap: 8, alignItems: "center" }}
+                  className="btn-secondary profile-refresh"
                   onClick={fetchPromoterProfile}
                   disabled={loadingProfile}
                 >
