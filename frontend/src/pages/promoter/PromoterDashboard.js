@@ -3,6 +3,7 @@ import Navbar from "../../components/Navbar";
 import "../../styles/promoter/PromotorDashboard.css";
 
 import api from "../../services/api";
+import { getEventOrders } from "../../services/orderService";
 
 import {
   FaTicketAlt,
@@ -17,6 +18,7 @@ import {
   FaEdit,
   FaTrashAlt,
   FaPlus,
+  FaHistory,
 } from "react-icons/fa";
 
 import { FiMapPin, FiCalendar } from "react-icons/fi";
@@ -47,6 +49,23 @@ function toDateInputValue(dateValue) {
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function formatCurrency(value) {
+  const numberValue = Number(value) || 0;
+  return `Rp ${numberValue.toLocaleString("id-ID")}`;
+}
+
+function formatDateTime(value) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "-";
+  return d.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }) +
+    " " +
+    d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 }
 
 function isUpcoming(dateValue) {
@@ -94,6 +113,12 @@ export default function PromoterDashboard() {
   const [ticketFormError, setTicketFormError] = useState("");
   const [savingTicket, setSavingTicket] = useState(false);
 
+  // ===== SALES STATE =====
+  const [salesEventId, setSalesEventId] = useState("");
+  const [eventOrders, setEventOrders] = useState([]);
+  const [loadingSales, setLoadingSales] = useState(false);
+  const [salesError, setSalesError] = useState("");
+
   useEffect(() => {
     fetchEvents();
   }, []);
@@ -104,7 +129,11 @@ export default function PromoterDashboard() {
       setEventsError("");
 
       const res = await api.get(EVENTS_ENDPOINT);
-      setEvents(res.data?.data || []);
+      const eventList = res.data?.data || [];
+      setEvents(eventList);
+      if (!salesEventId && eventList.length > 0) {
+        setSalesEventId(String(eventList[0].id));
+      }
     } catch (err) {
       setEventsError(
         err.response?.data?.message || err.message || "Gagal memuat event"
@@ -177,7 +206,13 @@ export default function PromoterDashboard() {
 
     try {
       await api.delete(`${EVENTS_ENDPOINT}/${id}`);
-      setEvents((prev) => prev.filter((ev) => ev.id !== id));
+      setEvents((prev) => {
+        const next = prev.filter((ev) => ev.id !== id);
+        if (String(salesEventId) === String(id)) {
+          setSalesEventId(next[0]?.id ? String(next[0].id) : "");
+        }
+        return next;
+      });
 
       if (editingEventId === id) {
         resetNewEventForm();
@@ -254,6 +289,15 @@ export default function PromoterDashboard() {
     fetchTickets(selectedEventId);
   }, [selectedEventId]);
 
+  useEffect(() => {
+    if (!salesEventId) {
+      setEventOrders([]);
+      setSalesError("");
+      return;
+    }
+    fetchEventSales(salesEventId);
+  }, [salesEventId]);
+
   const fetchTickets = async (eventId) => {
     try {
       setLoadingTickets(true);
@@ -267,6 +311,22 @@ export default function PromoterDashboard() {
       );
     } finally {
       setLoadingTickets(false);
+    }
+  };
+
+  const fetchEventSales = async (eventId) => {
+    try {
+      setLoadingSales(true);
+      setSalesError("");
+      const orders = await getEventOrders(eventId);
+      setEventOrders(orders || []);
+    } catch (err) {
+      setSalesError(
+        err.response?.data?.message || err.message || "Gagal memuat laporan"
+      );
+      setEventOrders([]);
+    } finally {
+      setLoadingSales(false);
     }
   };
 
@@ -363,6 +423,54 @@ export default function PromoterDashboard() {
   const selectedEvent =
     selectedEventId &&
     events.find((ev) => String(ev.id) === String(selectedEventId));
+
+  const selectedSalesEvent =
+    salesEventId && events.find((ev) => String(ev.id) === String(salesEventId));
+
+  const totalOrders = eventOrders.length;
+  const totalTicketsSold = eventOrders.reduce((sum, order) => {
+    const orderTickets = order.items?.reduce(
+      (acc, item) => acc + (Number(item.quantity) || 0),
+      0
+    );
+    return sum + (orderTickets || 0);
+  }, 0);
+  const totalRevenue = eventOrders.reduce(
+    (sum, order) => sum + (Number(order.total_price) || 0),
+    0
+  );
+
+  const ticketSummary = () => {
+    const map = new Map();
+
+    eventOrders.forEach((order) => {
+      (order.items || []).forEach((item) => {
+        const key = item.ticket_type || "Tiket";
+        const existing = map.get(key) || {
+          ticketType: key,
+          totalQuantity: 0,
+          totalRevenue: 0,
+          orderIds: new Set(),
+        };
+
+        const qty = Number(item.quantity) || 0;
+        const price = Number(item.ticket_price) || 0;
+
+        existing.totalQuantity += qty;
+        existing.totalRevenue += price * qty;
+        existing.orderIds.add(order.id);
+
+        map.set(key, existing);
+      });
+    });
+
+    return Array.from(map.values()).map((entry) => ({
+      ticketType: entry.ticketType,
+      totalQuantity: entry.totalQuantity,
+      totalRevenue: entry.totalRevenue,
+      orderCount: entry.orderIds.size,
+    }));
+  };
 
   return (
     <div className="promoter-dashboard">
@@ -970,9 +1078,183 @@ export default function PromoterDashboard() {
                   <FaMoneyBillWave /> Laporan Penjualan
                 </h2>
               </div>
-              <p className="info-text">
-                Lihat data pembeli, riwayat penjualan, dan export data
-              </p>
+
+              {events.length === 0 ? (
+                <p className="info-text">
+                  Belum ada event. Buat event terlebih dahulu untuk melihat
+                  laporan penjualan.
+                </p>
+              ) : (
+                <>
+                  <div
+                    className="event-form"
+                    style={{ marginTop: 0, marginBottom: 20 }}
+                  >
+                    <div className="form-row">
+                      <label>Pilih Event</label>
+                      <select
+                        value={salesEventId}
+                        onChange={(e) => setSalesEventId(e.target.value)}
+                      >
+                        <option value="">-- Pilih Event --</option>
+                        {events.map((ev) => (
+                          <option key={ev.id} value={ev.id}>
+                            {ev.title} ({formatDate(ev.date)})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {selectedSalesEvent && (
+                      <div className="form-row">
+                        <label>Info Event</label>
+                        <div className="info-text">
+                          <strong>{selectedSalesEvent.title}</strong> |{" "}
+                          {formatDate(selectedSalesEvent.date)} -{" "}
+                          {selectedSalesEvent.location || "-"}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {!salesEventId && (
+                    <p className="info-text">
+                      Pilih event untuk melihat laporan penjualan.
+                    </p>
+                  )}
+
+                  {salesEventId && (
+                    <>
+                      {salesError && (
+                        <p className="error-text">{salesError}</p>
+                      )}
+                      {loadingSales ? (
+                        <p className="info-text">Memuat laporan...</p>
+                      ) : (
+                        <>
+                          <div className="stats-grid" style={{ marginBottom: 20 }}>
+                            <div className="stat-card">
+                              <div className="stat-icon">
+                                <FaClipboardList />
+                              </div>
+                              <div className="stat-content">
+                                <p className="stat-label">Total Order</p>
+                                <h3 className="stat-value">{totalOrders}</h3>
+                              </div>
+                            </div>
+
+                            <div className="stat-card">
+                              <div className="stat-icon">
+                                <FaTicketAlt />
+                              </div>
+                              <div className="stat-content">
+                                <p className="stat-label">Tiket Terjual</p>
+                                <h3 className="stat-value">{totalTicketsSold}</h3>
+                              </div>
+                            </div>
+
+                            <div className="stat-card">
+                              <div className="stat-icon">
+                                <FaMoneyBillWave />
+                              </div>
+                              <div className="stat-content">
+                                <p className="stat-label">Total Pembayaran</p>
+                                <h3 className="stat-value">{formatCurrency(totalRevenue)}</h3>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="recent-sales" style={{ marginBottom: 24 }}>
+                            <h3>Ringkasan Tiket Terjual</h3>
+                            {eventOrders.length === 0 ? (
+                              <p className="info-text">
+                                Belum ada transaksi untuk event ini.
+                              </p>
+                            ) : (
+                              <table className="sales-table">
+                                <thead>
+                                  <tr>
+                                    <th>Jenis Tiket</th>
+                                    <th>Jumlah Order</th>
+                                    <th>Total Tiket</th>
+                                    <th>Pendapatan</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {ticketSummary().map((summary) => (
+                                    <tr key={summary.ticketType}>
+                                      <td>{summary.ticketType}</td>
+                                      <td>{summary.orderCount}</td>
+                                      <td>{summary.totalQuantity}</td>
+                                      <td>{formatCurrency(summary.totalRevenue)}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            )}
+                          </div>
+
+                          <div className="recent-sales">
+                            <h3 style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <FaHistory /> Riwayat Penjualan
+                            </h3>
+                            {eventOrders.length === 0 ? (
+                              <p className="info-text">Belum ada riwayat.</p>
+                            ) : (
+                              <table className="sales-table">
+                                <thead>
+                                  <tr>
+                                    <th>Order</th>
+                                    <th>Pembeli</th>
+                                    <th>Detail Tiket</th>
+                                    <th>Total Bayar</th>
+                                    <th>Status</th>
+                                    <th>Waktu</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {[...eventOrders]
+                                    .sort(
+                                      (a, b) =>
+                                        new Date(b.created_at) - new Date(a.created_at)
+                                    )
+                                    .map((order) => {
+                                      const buyerName =
+                                        order.buyer_name ||
+                                        order.user_name ||
+                                        order.user?.name ||
+                                        order.buyer?.name ||
+                                        "-";
+
+                                      const ticketsLabel = (order.items || [])
+                                        .map((item) =>
+                                          `${item.ticket_type || "Tiket"} x${
+                                            item.quantity || 0
+                                          }`
+                                        )
+                                        .join(", ");
+
+                                      return (
+                                        <tr key={order.id}>
+                                          <td>#{order.id}</td>
+                                          <td>{buyerName}</td>
+                                          <td>{ticketsLabel || "-"}</td>
+                                          <td>{formatCurrency(order.total_price)}</td>
+                                          <td>{order.payment_status || "-"}</td>
+                                          <td>{formatDateTime(order.created_at)}</td>
+                                        </tr>
+                                      );
+                                    })}
+                                </tbody>
+                              </table>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
             </section>
           )}
 
