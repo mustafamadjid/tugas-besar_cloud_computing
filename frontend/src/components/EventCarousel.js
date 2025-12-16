@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import '../styles/EventCarousel.css';
 
-export default function EventCarousel({ events = [] }) {
+export default function EventCarousel({ events = [], onEventClick }) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -38,6 +38,7 @@ export default function EventCarousel({ events = [] }) {
             <div
               key={event.id}
               className={`carousel-slide ${index === currentSlide ? 'active' : ''}`}
+              onClick={() => onEventClick?.(event.id)}
             >
               <div className="slide-background">
                 {event.poster_url ? (
@@ -62,7 +63,15 @@ export default function EventCarousel({ events = [] }) {
                       <FaMapMarkerAlt /> {event.location}
                     </p>
                   )}
-                  <button className="slide-btn">Lihat Sekarang →</button>
+                  <button
+                    className="slide-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEventClick?.(event.id);
+                    }}
+                  >
+                    Lihat Sekarang →
+                  </button>
                 </div>
             </div>
           ))}

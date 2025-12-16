@@ -53,7 +53,10 @@ export default function LandingPage() {
 
       {/* Carousel Section - Featured Events */}
       {!loading && events.length > 0 && (
-        <EventCarousel events={events.slice(0, 5)} />
+        <EventCarousel
+          events={events.slice(0, 5)}
+          onEventClick={handleEventClick}
+        />
       )}
 
       {/* Featured Events Section */}
