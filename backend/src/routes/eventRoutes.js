@@ -18,5 +18,11 @@ router.get("/:eventId/tickets", eventController.getEventTickets);
 router.post("/:eventId/tickets", authenticateToken, isPromoter, eventController.addTicketToEvent);
 router.put("/tickets/:ticketId", authenticateToken, isPromoter, eventController.updateTicket);
 router.delete("/tickets/:ticketId", authenticateToken, isPromoter, eventController.deleteTicket);
+router.get(
+  "/:eventId/orders",
+  authenticateToken,
+  isPromoter,
+  eventController.getEventOrders
+);
 
 export default router;

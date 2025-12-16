@@ -228,6 +228,81 @@ const deleteTicket = async (req, res) => {
   }
 };
 
+// Get all orders for a specific event (promoter only)
+const getEventOrders = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const promoterId = req.user?.id;
+
+    const eventResult = await pool.query(
+      "SELECT id, promoter_id FROM events WHERE id = $1",
+      [eventId]
+    );
+
+    if (eventResult.rows.length === 0) {
+      return fail(res, "Event not found", 404);
+    }
+
+    if (eventResult.rows[0].promoter_id !== promoterId) {
+      return fail(res, "Forbidden: you are not the promoter of this event", 403);
+    }
+
+    const { rows } = await pool.query(
+      `SELECT
+        o.id AS order_id,
+        o.total_price,
+        o.payment_status,
+        o.payment_method,
+        o.payment_reference,
+        o.created_at,
+        u.name AS buyer_name,
+        u.email AS buyer_email,
+        oi.id AS order_item_id,
+        oi.ticket_type,
+        oi.ticket_price,
+        oi.quantity,
+        oi.checked_in
+      FROM orders o
+      JOIN order_items oi ON oi.order_id = o.id
+      JOIN events e ON e.id = oi.event_id
+      JOIN users u ON u.id = o.user_id
+      WHERE oi.event_id = $1
+      ORDER BY o.created_at DESC`,
+      [eventId]
+    );
+
+    const grouped = {};
+
+    rows.forEach((row) => {
+      if (!grouped[row.order_id]) {
+        grouped[row.order_id] = {
+          id: row.order_id,
+          total_price: Number(row.total_price),
+          payment_status: row.payment_status,
+          payment_method: row.payment_method,
+          payment_reference: row.payment_reference,
+          created_at: row.created_at,
+          buyer_name: row.buyer_name,
+          buyer_email: row.buyer_email,
+          items: [],
+        };
+      }
+
+      grouped[row.order_id].items.push({
+        order_item_id: row.order_item_id,
+        ticket_type: row.ticket_type,
+        ticket_price: Number(row.ticket_price),
+        quantity: row.quantity,
+        checked_in: row.checked_in,
+      });
+    });
+
+    return ok(res, "Event orders fetched", Object.values(grouped));
+  } catch (error) {
+    return fail(res, "Failed to fetch event orders", 500, { error: error.message });
+  }
+};
+
 export {
   getAllEvents,
   getEventById,
@@ -238,4 +313,5 @@ export {
   addTicketToEvent,
   updateTicket,
   deleteTicket,
+  getEventOrders,
 };
