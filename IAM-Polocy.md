@@ -26,7 +26,7 @@ Dokumentasi ini merangkum pemberian peran (IAM roles) untuk beberapa anggota tim
 - `roles/logging.viewer` — Membaca log untuk aktivitas keamanan atau audit trail.
 - `roles/monitoring.viewer` — Melihat metrik/alert untuk menginvestigasi insiden keamanan.
 
-### Muhammad037 (Backend Deploy) — `muhammad.122140037@student.itera.ac.id`
+### Riveldo (Backend Deploy) — `muhammad.122140037@student.itera.ac.id`
 - `roles/run.developer` — Mendeploy dan mengelola layanan Cloud Run (membuat revisi, konfigurasi, rollout backend).
 - `roles/cloudsql.client` — Menghubungkan aplikasi ke instance Cloud SQL sebagai klien (membutuhkan kredensial/secret terpisah).
 - `roles/secretmanager.secretAccessor` — Mengambil nilai secret pada Secret Manager (tanpa izin mengubah), biasanya untuk env var backend.
@@ -37,7 +37,7 @@ Dokumentasi ini merangkum pemberian peran (IAM roles) untuk beberapa anggota tim
 - `roles/run.developer` — Mendeploy dan mengelola layanan frontend di Cloud Run.
 - `roles/logging.viewer` — Membaca log untuk memantau error frontend dan integrasi.
 
-### Muhammad189 (QA) — `muhammad.122140189@student.itera.ac.id`
+### Ghiffari (QA) — `muhammad.122140189@student.itera.ac.id`
 - `roles/viewer` — Akses baca lintas resource proyek untuk verifikasi dan pengujian tanpa hak modifikasi.
 - `roles/logging.viewer` — Membaca log untuk memeriksa error selama pengujian.
 - `roles/monitoring.viewer` — Melihat metrik/alert untuk memastikan stabilitas selama QA.
