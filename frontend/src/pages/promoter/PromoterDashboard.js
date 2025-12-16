@@ -1338,14 +1338,6 @@ export default function PromoterDashboard() {
                       <strong>{promoterProfile.role}</strong>
                     </div>
                     <div className="detail-row">
-                      <span>Provider</span>
-                      <strong>{promoterProfile.provider}</strong>
-                    </div>
-                    <div className="detail-row">
-                      <span>Google UID</span>
-                      <strong>{promoterProfile.google_uid || "-"}</strong>
-                    </div>
-                    <div className="detail-row">
                       <span>Bergabung</span>
                       <strong>{formatDateTime(promoterProfile.created_at)}</strong>
                     </div>
