@@ -1,4 +1,4 @@
-# Dokumentasi IAM Policy Proyek "gotiketku-project"
+# Dokumentasi IAM Policy Proyek
 
 Dokumentasi ini merangkum pemberian peran (IAM roles) untuk beberapa anggota tim pada proyek **gotiketku-project**. Setiap subseksi memuat:
 
