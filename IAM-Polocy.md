@@ -10,6 +10,14 @@ Dokumentasi ini merangkum pemberian peran (IAM roles) untuk beberapa anggota tim
 
 ## Ringkasan Peran per Anggota
 
+### Fungsi Posisi Tim
+- **Infra Lead**: Bertanggung jawab memastikan fondasi infrastruktur (jaringan, IAM, secret, enkripsi) siap dan aman untuk seluruh tim, serta menetapkan standar konfigurasi dan observabilitas.
+- **Security Reviewer**: Memvalidasi kepatuhan keamanan dan prinsip least privilege melalui audit akses, log, dan konfigurasi kunci/secret tanpa melakukan perubahan operasional.
+- **Backend Deploy**: Fokus pada proses rilis backend (Cloud Run/SQL) dan menjaga parameter rahasia yang dibutuhkan layanan, dengan visibilitas log/monitoring untuk operasi.
+- **Frontend**: Menangani rilis layanan frontend dan memantau kualitasnya melalui log, tanpa akses menulis ke resource lain.
+- **QA**: Menguji aplikasi dengan akses baca lintas resource untuk verifikasi, memantau log/monitoring tanpa hak modifikasi.
+- **Project Lead**: Mengelola IAM dan orkestrasi layanan lintas area (jaringan, Run, secret, KMS) untuk memastikan deliverable berjalan dan kepatuhan akses terjaga.
+
 ### Eden (Infra Lead) — `eden.122140187@student.itera.ac.id`
 - `roles/compute.networkAdmin` — Membuat dan mengelola sumber daya jaringan Compute Engine (VPC, subnet, firewall, route) untuk kebutuhan infrastruktur.
 - `roles/secretmanager.admin` — Penuh kendali atas Secret Manager, termasuk membuat, memutar, dan menghapus secret untuk aplikasi.
