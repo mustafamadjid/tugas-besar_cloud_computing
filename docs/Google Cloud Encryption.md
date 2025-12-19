@@ -22,10 +22,8 @@ Dokumentasi ini menjelaskan bagaimana proyek cloud ini mengelola enkripsi dan ra
 
 ## Secret Manager
 
-
-```md
-![Deskripsi gambar](gambar/google-encryption/secret-manager.png)
-```
+  -![Secret Manager Firebase Account](gambar/google-encryption/secret-manager.png)
 
 
-> Pastikan path gambar sesuai dengan lokasi file di repository.
+
+
