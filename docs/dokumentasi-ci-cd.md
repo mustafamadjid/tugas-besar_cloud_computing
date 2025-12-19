@@ -13,15 +13,9 @@ Pipeline CI/CD memanfaatkan layanan GCP berikut:
 
 ## Diagram CI/CD
 
-Tambahkan gambar arsitektur ke folder `docs/gambar/` lalu sisipkan pada bagian ini.
-Contoh penggunaan:
 
-```md
-![Diagram CI/CD](gambar/cicd-arsitektur.png)
-```
+![Diagram CI/CD](gambar/ci-cd/ci-cd.png)
 
-Jika ingin menampilkan gambar yang sudah disediakan, pastikan nama file dan path
-sesuai dengan lokasi di folder `docs/gambar/`.
 
 ## Alur CI/CD
 
