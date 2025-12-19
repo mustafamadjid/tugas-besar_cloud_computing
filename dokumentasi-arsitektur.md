@@ -7,6 +7,7 @@ Dokumen ini menjelaskan bentuk arsitektur yang digunakan dan dibagi menjadi dua 
 - **Frontend** dan **Backend** di-deploy menggunakan **Google Cloud Run**.
 - **Frontend** menggunakan **Firebase Authentication** untuk fitur **Google Sign-In**.
 - **Frontend** berada di belakang **Load Balancer**, sehingga IP yang di-assign pada DNS record adalah IP dari Load Balancer tersebut.
+- **Database** menggunakan **Cloud SQL (PostgreSQL)** sebagai penyimpanan data terpusat.
 - **Domain** aplikasi: **https://komaiterasi3.gotiketku.online**.
 
 ### Visualisasi Arsitektur GCP
@@ -17,6 +18,7 @@ flowchart LR
     LB --> FE[Cloud Run - Frontend]
     FE -->|Google Sign-In| Firebase[Firebase Authentication]
     FE -->|REST API| BE[Cloud Run - Backend]
+    BE -->|SQL Query| CloudSQL[Cloud SQL - PostgreSQL]
 ```
 
 ### Ringkasan Alur
@@ -24,6 +26,7 @@ flowchart LR
 2. Load Balancer meneruskan trafik ke layanan frontend di Cloud Run.
 3. Frontend melakukan autentikasi melalui Firebase Auth (Google Sign-In).
 4. Frontend berkomunikasi dengan backend di Cloud Run melalui REST API.
+5. Backend melakukan query ke Cloud SQL (PostgreSQL) untuk membaca/menulis data.
 
 ## Arsitektur Sistem
 
