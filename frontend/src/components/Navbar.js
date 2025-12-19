@@ -46,7 +46,7 @@ export default function Navbar() {
             <span className="brand-icon">
               <FaTicketAlt />
             </span>
-            <span className="brand-name">GOTIKETKU</span>
+            <span className="brand-name">GOTIKETKU- GHIFFARI</span>
           </div>
 
           <div className="navbar-tabs">

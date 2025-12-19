@@ -20,18 +20,12 @@ Dokumentasi ini menjelaskan bagaimana proyek cloud ini mengelola enkripsi dan ra
 - **Audit**: Akses secret dapat dilacak.
 - **Rotasi**: Memudahkan pembaruan kredensial tanpa redeploy besar.
 
-## Menambahkan Gambar
+## Secret Manager
 
-Untuk menyisipkan gambar, simpan file gambar di repository (misalnya di folder `docs/images/`) lalu gunakan Markdown berikut:
-
-```md
-![Deskripsi gambar](docs/images/nama-gambar.png)
-```
-
-Contoh:
 
 ```md
-![Alur Secret Manager](docs/images/secret-manager-flow.png)
+![Deskripsi gambar](gambar/google-encryption/secret-manager.png)
 ```
+
 
 > Pastikan path gambar sesuai dengan lokasi file di repository.

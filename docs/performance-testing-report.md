@@ -22,7 +22,7 @@ Mengukur latensi, throughput, dan error rate backend saat menerima load.
 - p95 latency: **34.71 ms**
 - Error rate: **0.00% (0 dari 455 request)**
 - Screenshot output k6:
-  -![k6 GET events](performance/screenshots/get-api-events.png)
+  -![k6 GET events](gambar/performance-test/get-api-events.png)
 
 ### POST /api/buyer/order
 - RPS rata-rata: **2.30 req/s**
@@ -30,13 +30,13 @@ Mengukur latensi, throughput, dan error rate backend saat menerima load.
 - p95 latency: **42.4 ms**
 - Error rate: **0.00% (0 dari 276 request gagal)**
 - Screenshot output k6:
-  - ![k6 POST order](performance/screenshots/post-create-order.png)
+  - ![k6 POST order](gambar/performance-test/screenshots/post-create-order.png)
 
 ## Hasil Observability GCP
 - Screenshot latency Cloud Run: 
-  - ![Cloud Run latency ](performance/screenshots/latency-gcp-metrics.png)`
+  - ![Cloud Run latency ](gambar/performance-test/latency-gcp-metrics.png)`
 
 
 - Screenshot request count: 
-  - ![Cloud Run request count](performance/screenshots/requestcount-gcp-metrics.png)
+  - ![Cloud Run request count](gambar/performance-test/requestcount-gcp-metrics.png)
 
