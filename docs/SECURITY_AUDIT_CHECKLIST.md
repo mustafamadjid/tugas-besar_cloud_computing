@@ -38,8 +38,3 @@ Checklist ini menyoroti kontrol keamanan utama yang ada pada proyek ini serta la
 - [ ] Pastikan konfigurasi Docker/hosting mem-forward port melalui HTTPS dan tidak mengekspos service internal.
 - [ ] Validasi variabel `FRONTEND_URL` memuat daftar origin produksi yang valid.
 
-## Rekomendasi Tambahan (jika belum ada)
-- [ ] Tambahkan rate limiting dan proteksi brute force pada endpoint autentikasi.
-- [ ] Terapkan helmet atau header keamanan lainnya untuk proteksi umum (XSS, clickjacking).
-- [ ] Catat jejak audit untuk perubahan data sensitif (pembuatan/ubah/hapus event & tiket).
-- [ ] Tambahkan pemantauan health check/uptime dan alert untuk kegagalan autentikasi berulang.
