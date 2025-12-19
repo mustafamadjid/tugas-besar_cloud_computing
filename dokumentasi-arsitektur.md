@@ -11,15 +11,7 @@ Dokumen ini menjelaskan bentuk arsitektur yang digunakan dan dibagi menjadi dua 
 - **Domain** aplikasi: **https://komaiterasi3.gotiketku.online**.
 
 ### Visualisasi Arsitektur GCP
-```mermaid
-flowchart LR
-    User[Pengguna] --> DNS[DNS Record]
-    DNS --> LB[Cloud Load Balancer]
-    LB --> FE[Cloud Run - Frontend]
-    FE -->|Google Sign-In| Firebase[Firebase Authentication]
-    FE -->|REST API| BE[Cloud Run - Backend]
-    BE -->|SQL Query| CloudSQL[Cloud SQL - PostgreSQL]
-```
+![Arsitektur GCP](gambar/arsitektur/arsitektur-gcp.png)
 
 ### Ringkasan Alur
 1. Pengguna mengakses domain aplikasi yang mengarah ke IP Load Balancer.
@@ -33,28 +25,7 @@ flowchart LR
 Arsitektur sistem mengikuti pola **3-tier**: Presentation Tier, Application Tier, dan Database Tier.
 
 ### Visualisasi Arsitektur Sistem
-```mermaid
-flowchart LR
-    subgraph Presentation[Presentation Tier]
-        Client[Web App (Client)]
-        FirebaseAuth[Firebase Auth]
-        Client -->|Google Sign-In| FirebaseAuth
-        FirebaseAuth -->|ID Token (JWT)| Client
-    end
-
-    subgraph Application[Application Tier]
-        Backend[Backend\nNode.js + Express.js]
-    end
-
-    subgraph Database[Database Tier]
-        DB[(PostgreSQL)]
-    end
-
-    Client -->|HTTP Request (REST API) + JWT| Backend
-    Backend -->|SQL Query| DB
-    DB -->|Data Result| Backend
-    Backend -->|HTTP JSON Response| Client
-```
+![Arsitektur Sistem](gambar/arsitektur/arsitektur-sistem.png)
 
 ### Presentation Tier
 - **Web App (Client)** sebagai antarmuka pengguna.
