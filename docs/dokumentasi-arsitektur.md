@@ -11,7 +11,7 @@ Dokumen ini menjelaskan bentuk arsitektur yang digunakan dan dibagi menjadi dua 
 - **Domain** aplikasi: **https://komaiterasi3.gotiketku.online**.
 
 ### Visualisasi Arsitektur GCP
-![Arsitektur GCP](gambar/arsitektur/arsitektur-gcp.png)
+![Arsitektur GCP](gambar/arsitektur/gcp.jpg)
 
 ### Ringkasan Alur
 1. Pengguna mengakses domain aplikasi yang mengarah ke IP Load Balancer.
@@ -25,7 +25,7 @@ Dokumen ini menjelaskan bentuk arsitektur yang digunakan dan dibagi menjadi dua 
 Arsitektur sistem mengikuti pola **3-tier**: Presentation Tier, Application Tier, dan Database Tier.
 
 ### Visualisasi Arsitektur Sistem
-![Arsitektur Sistem](gambar/arsitektur/arsitektur-sistem.png)
+![Arsitektur Sistem](gambar/arsitektur/three-tier.png)
 
 ### Presentation Tier
 - **Web App (Client)** sebagai antarmuka pengguna.
