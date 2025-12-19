@@ -7,7 +7,7 @@ Dokumen ini menjelaskan struktur tabel dan relasi pada skema database aplikasi. 
 Silakan simpan gambar skema ke dalam folder `docs/gambar/` lalu tambahkan tautan gambar berikut:
 
 ```markdown
-![Skema Database](./gambar/skema-database.png)
+![Skema Database](gambar/database/skema.png)
 ```
 
 > **Catatan:** Ubah nama file (`skema-database.png`) sesuai nama gambar yang Anda gunakan.
